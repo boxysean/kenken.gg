@@ -1,8 +1,0 @@
-a=9+ b=6 c=1- d=140x e=1- f=2- g=1- h=4 i=2- j=4- k=3/ l=7+ m=20+ n=11+ o=5- p=2- q=3/ r=4- s=4 t=2/ u=40x v=4- w=6x
-a b c d d e e
-a a c d f g h
-i j j k f g l
-i m m k n n l
-o p m q q n r
-o p m s t u r
-v v w w t u u

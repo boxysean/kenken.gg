@@ -1,7 +1,0 @@
-a=60x b=4+ c=16+ d=45x e=40x f=72x g=4x h=11+ i=4- j=12+ k=12x l=5 m=8+ n=2
-a b b c c d
-a b e c d d
-a f e e g g
-f f h i j g
-k l h i j j
-k k h m m n
