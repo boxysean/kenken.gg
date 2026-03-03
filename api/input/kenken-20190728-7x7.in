@@ -1,8 +1,0 @@
-a=1- b=1- c=5- d=1- e=1- f=1- g=10+ h=6- i=4 j=15x k=4- l=10+ m=5 n=24x o=5- p=2/ q=2- r=3- s=6 t=11+ u=3/ v=6- w=13+ x=12x
-a b b c c d e
-a f g h h d e
-i f g j j j k
-l l g m n n k
-o o p p n q q
-r r s t t u u
-v v w w w x x

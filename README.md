@@ -5,12 +5,9 @@
 
 ### About this repository
 
-Contains two applications that work in tandem:
+A React SPA with a client-side KenKen puzzle solver, deployed to AWS and served over CloudFront.
 
-1. api: A Scala KenKen solver deployed as an API using the [Serverless](https://serverless.com/) framework.
-2. web: A React SPA deployed to AWS and served over Cloudfront.
-
-They are deployed using GitHub Actions.
+The solver runs entirely in the browser — no backend API is needed. It is deployed using GitHub Actions.
 
 ### Reporting issues
 

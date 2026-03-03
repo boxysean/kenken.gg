@@ -11,6 +11,7 @@ import Modal from './components/Modal';
 import SolveButton from './components/SolveButton';
 import SolveLifecycle from './SolveLifecycle';
 import Tooltip from './components/Tooltip';
+import { solveFromAPI } from './solver';
 
 import update from 'immutability-helper';
 
@@ -145,34 +146,21 @@ class App extends React.Component {
     console.log(constraintString);
     console.log(boardStrings);
 
-    this.setState({
-      solveLifecycle: SolveLifecycle.Pending,
-      showTooltip: false,
-    })
-
-    fetch("https://api.kenken.gg/solve", {
-      method: "post",
-      body: JSON.stringify({
-        constraintString: constraintString,
-        boardStrings: boardStrings,
-      })
-    })
-      .then(res => res.json())
-      .then((data) => {
-        console.log(data.boardOutput);
-        this.setState({
-          answers: data.boardOutput.split(/\s/),
-          solveLifecycle: SolveLifecycle.Success,
-          showTooltip: true,
-        });
-      })
-      .catch(error => {
-        this.setState({
-          solveLifecycle: SolveLifecycle.Failure,
-          showTooltip: true,
-        });
-        console.log(error);
+    try {
+      var boardOutput = solveFromAPI(boardStrings, constraintString);
+      console.log(boardOutput);
+      this.setState({
+        answers: boardOutput.split(/\s/),
+        solveLifecycle: SolveLifecycle.Success,
+        showTooltip: true,
       });
+    } catch (error) {
+      this.setState({
+        solveLifecycle: SolveLifecycle.Failure,
+        showTooltip: true,
+      });
+      console.log(error);
+    }
   }
 
   changeBoardSize(size) {
