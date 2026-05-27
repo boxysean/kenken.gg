@@ -11,7 +11,7 @@
     "react-helmet": "^5.2.1",
     "react-loading-io": "^2.2.0",
     "react-pushy-buttons": "0.0.3",
-    "react-scripts": "3.1.1",
+    "react-scripts": "5.0.1",
     "react-transition-group": "^4.3.0"
   },
   "scripts": {
