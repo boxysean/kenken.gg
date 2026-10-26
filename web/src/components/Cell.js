@@ -1,8 +1,8 @@
 import React from 'react';
-import styles from './Cell.css';
-import classNames from 'classnames/bind';
+import './Cell.css';
+import classNames from 'classnames';
 
-let cx = classNames.bind(styles);
+let cx = classNames;
 
 
 class Cell extends React.Component {

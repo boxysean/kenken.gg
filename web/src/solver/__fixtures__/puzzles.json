@@ -1,0 +1,127 @@
+[
+  {
+    "name": "kenken1",
+    "sourcePuzzle": "api/input/kenken1.in",
+    "boardStrings": [
+      "a b b c c d",
+      "a b e c d d",
+      "a f e e g g",
+      "f f h i j g",
+      "k l h i j j",
+      "k k h m m n"
+    ],
+    "constraintString": "a=60x b=4+ c=16+ d=45x e=40x f=72x g=4x h=11+ i=4- j=12+ k=12x l=5 m=8+ n=2",
+    "expectedBoardOutput": "5 2 1 4 6 3\n2 1 4 6 3 5\n6 3 5 2 1 4\n4 6 3 5 2 1\n3 5 2 1 4 6\n1 4 6 3 5 2",
+    "expectedSolved": true,
+    "source": "original Scala solver, run on this box against api/input/kenken1.in",
+    "expectedSource": "produced by the original Scala solver from api/input/kenken1.in",
+    "scalaSolveMs": 8.2,
+    "scalaSolveMsNote": "warm-JVM solve time from a repeat run; the prior values were cold-start timings dominated by JVM startup, not solve time"
+  },
+  {
+    "name": "kenken2",
+    "sourcePuzzle": "api/input/kenken2.in",
+    "boardStrings": [
+      "a a b",
+      "c d b",
+      "c d b"
+    ],
+    "constraintString": "a=3+ b=6+ c=5+ d=4+",
+    "expectedBoardOutput": "1 2 3\n2 3 1\n3 1 2",
+    "expectedSolved": true,
+    "source": "original Scala solver, run on this box against api/input/kenken2.in",
+    "alternativeValidSolution": "1 2 3\n3 1 2\n2 3 1",
+    "expectedSource": "produced by the original Scala solver from api/input/kenken2.in",
+    "scalaSolveMs": 1.3,
+    "note": "This puzzle has two solutions (api/src/test/scala/gg/kenken/solver/GameStateTest.scala:56-60 lists both). The Scala solver returns the first one; the comment at GameStateTest.scala:11-15 shows the other. The port reproduces the Scala answer, not the comment.",
+    "scalaSolveMsNote": "warm-JVM solve time from a repeat run; the prior values were cold-start timings dominated by JVM startup, not solve time"
+  },
+  {
+    "name": "kenken3",
+    "sourcePuzzle": "api/input/kenken3.in",
+    "boardStrings": [
+      "a b c",
+      "a c c",
+      "d e e"
+    ],
+    "constraintString": "a=6x b=2 c=5+ d=1 e=1-",
+    "expectedBoardOutput": "3 2 1\n2 1 3\n1 3 2",
+    "expectedSolved": true,
+    "source": "original Scala solver, run on this box against api/input/kenken3.in",
+    "expectedSource": "produced by the original Scala solver from api/input/kenken3.in",
+    "scalaSolveMs": 1.1,
+    "scalaSolveMsNote": "warm-JVM solve time from a repeat run; the prior values were cold-start timings dominated by JVM startup, not solve time"
+  },
+  {
+    "name": "kenken-20190728-5x5",
+    "sourcePuzzle": "api/input/kenken-20190728-5x5.in",
+    "boardStrings": [
+      "a b b c d",
+      "e e f c d",
+      "g f f c h",
+      "g i j h h",
+      "k k j j l"
+    ],
+    "constraintString": "a=5 b=1- c=12x d=1- e=2/ f=11+ g=3+ h=30x i=4 j=30x k=2- l=4",
+    "expectedBoardOutput": "5 3 4 1 2\n4 2 5 3 1\n2 5 1 4 3\n1 4 3 2 5\n3 1 2 5 4",
+    "expectedSolved": true,
+    "source": "original Scala solver, run on this box against api/input/kenken-20190728-5x5.in",
+    "expectedSource": "produced by the original Scala solver from api/input/kenken-20190728-5x5.in",
+    "scalaSolveMs": 986.6,
+    "scalaSolveMsNote": "warm-JVM solve time from a repeat run; the prior values were cold-start timings dominated by JVM startup, not solve time"
+  },
+  {
+    "name": "kenken-20190728-7x7",
+    "sourcePuzzle": "api/input/kenken-20190728-7x7.in",
+    "boardStrings": [
+      "a b b c c d e",
+      "a f g h h d e",
+      "i f g j j j k",
+      "l l g m n n k",
+      "o o p p n q q",
+      "r r s t t u u",
+      "v v w w w x x"
+    ],
+    "constraintString": "a=1- b=1- c=5- d=1- e=1- f=1- g=10+ h=6- i=4 j=15x k=4- l=10+ m=5 n=24x o=5- p=2/ q=2- r=3- s=6 t=11+ u=3/ v=6- w=13+ x=12x",
+    "expectedBoardOutput": "2 4 3 1 6 7 5\n3 5 2 7 1 6 4\n4 6 7 3 5 1 2\n7 3 1 5 4 2 6\n6 1 4 2 3 5 7\n5 2 6 4 7 3 1\n1 7 5 6 2 4 3",
+    "expectedSolved": true,
+    "source": "original Scala solver, run on this box against api/input/kenken-20190728-7x7.in",
+    "expectedSource": "produced by the original Scala solver from api/input/kenken-20190728-7x7.in",
+    "scalaSolveMs": 508.9,
+    "scalaSolveMsNote": "warm-JVM solve time from a repeat run; the prior values were cold-start timings dominated by JVM startup, not solve time"
+  },
+  {
+    "name": "kenken-20190817-7x7",
+    "sourcePuzzle": "api/input/kenken-20190817-7x7.in",
+    "boardStrings": [
+      "a b c d d e e",
+      "a a c d f g h",
+      "i j j k f g l",
+      "i m m k n n l",
+      "o p m q q n r",
+      "o p m s t u r",
+      "v v w w t u u"
+    ],
+    "constraintString": "a=9+ b=6 c=1- d=140x e=1- f=2- g=1- h=4 i=2- j=4- k=3/ l=7+ m=20+ n=11+ o=5- p=2- q=3/ r=4- s=4 t=2/ u=40x v=4- w=6x",
+    "expectedBoardOutput": "5 6 3 7 4 1 2\n3 1 2 5 7 6 4\n4 2 6 3 5 7 1\n2 4 7 1 3 5 6\n1 5 4 2 6 3 7\n6 7 5 4 1 2 3\n7 3 1 6 2 4 5",
+    "expectedSolved": true,
+    "source": "original Scala solver, run on this box against api/input/kenken-20190817-7x7.in",
+    "expectedSource": "produced by the original Scala solver from api/input/kenken-20190817-7x7.in",
+    "scalaSolveMs": 333.0,
+    "scalaSolveMsNote": "warm-JVM solve time from a repeat run; the prior values were cold-start timings dominated by JVM startup, not solve time"
+  },
+  {
+    "name": "unsolvable-3x3-row-sums",
+    "sourcePuzzle": null,
+    "boardStrings": [
+      "a a a",
+      "b b b",
+      "c c c"
+    ],
+    "constraintString": "a=6+ b=6+ c=7+",
+    "expectedBoardOutput": null,
+    "expectedSolved": false,
+    "source": "constructed, unsolvable: every row of a 3x3 board is a permutation of 1..3 and therefore sums to 6, so a cage c=7+ spanning a whole row can never be met",
+    "expectedSource": "hand constructed (no Scala puzzle input for an unsolvable board)"
+  }
+]
