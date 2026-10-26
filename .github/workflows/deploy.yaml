@@ -30,25 +30,3 @@ jobs:
         AWS_ACCESS_KEY_ID: AKIA4PV5KJA6T26A6M5U
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY_GITHUB_ACTIONS }}
       run: make deploy
-
-  deploy-web:
-    name: Deploy Web
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-
-    - name: Use Node.js 20.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20.x
-
-    - name: Deploy
-      working-directory: web
-      env:
-        CI: true
-        AWS_DEFAULT_REGION: us-east-1
-        AWS_ACCESS_KEY_ID: AKIA4PV5KJA6T26A6M5U
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY_GITHUB_ACTIONS }}
-      run: make deploy

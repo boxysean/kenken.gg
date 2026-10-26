@@ -1,0 +1,48 @@
+# Netlify build configuration for kenken.gg.
+#
+# This file is the source of truth: Netlify reads it on every build and its
+# settings win over the build settings in the Netlify UI.
+#
+# The app is a single-page Vite build in `web/`. `vite build` writes to
+# `web/dist` (see web/vite.config.ts `build.outDir`), so `base` + `publish`
+# below must stay in step with it.
+
+[build]
+  base    = "web"
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Keep this equal to the `node-version` in .github/workflows/test.yaml, so the
+  # code Netlify builds is the code CI tested. Bumping it is a deliberate change.
+  NODE_VERSION = "20"
+  NPM_FLAGS    = "--no-audit --no-fund"
+
+# Vite fingerprints every asset under /assets/, so a given file name never
+# changes contents: cache it for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# index.html is the one file that must never be stale, because it is what names
+# the fingerprinted assets.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# No redirects, deliberately.
+#
+# The previous AWS site (an S3 website behind CloudFront) served exactly these
+# public URLs: `/`, `/about.html`, `/main.css`, `/robots.txt` and
+# `/favicon_io/*`. Every one of them is still a real file in the build output,
+# because Vite copies `web/public/` verbatim, so they keep working with no rule
+# at all. The app has no client-side router -- it renders one screen at `/` and
+# reads the `debug=true` query string there -- so there are no deep links to
+# rewrite onto index.html.
+#
+# That means a blanket `/* -> /index.html 200` rule would buy nothing and cost
+# something real: a mistyped or stale asset URL would return HTML with status
+# 200 instead of an honest 404. Add a rule here only when a URL that used to
+# work stops working.
