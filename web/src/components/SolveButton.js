@@ -1,10 +1,10 @@
 import React from 'react';
 import Button from 'react-pushy-buttons';
-import styles from './SolveButton.css';
+import './SolveButton.css';
 import 'react-pushy-buttons/css/pushy-buttons.css'
-import classNames from 'classnames/bind';
+import classNames from 'classnames';
 
-let cx = classNames.bind(styles);
+let cx = classNames;
 
 class SolveButton extends React.Component {
   render() {

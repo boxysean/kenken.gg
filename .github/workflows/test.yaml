@@ -10,13 +10,21 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
 
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
       with:
-        node-version: 12.x
+        node-version: 20.x
+
+    - name: Install
+      working-directory: web
+      run: npm ci
 
     - name: Test
       working-directory: web
       env:
         CI: true
-      run: make test
+      run: npm test
+
+    - name: Typecheck
+      working-directory: web
+      run: npm run typecheck

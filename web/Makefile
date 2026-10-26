@@ -8,7 +8,7 @@ deploy-cloudformation-stack: cfn-template.yml $(CFN_PARAMETERS_FILE)
 .PHONY: deploy-web
 deploy-web: build
 	$(eval WEBSITE_BUCKET := $(shell aws cloudformation describe-stacks --stack-name kenken-gg-web | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "S3Bucket").OutputValue'))
-	aws s3 sync build/ s3://$(WEBSITE_BUCKET)/
+	aws s3 sync dist/ s3://$(WEBSITE_BUCKET)/
 
 .PHONY: build
 build: install
@@ -32,8 +32,9 @@ install: package.json
 
 .PHONY: develop
 develop:
-	npm run start
+	npm run dev
 
 .PHONY: test
 test: install
 	npm test
+	npm run typecheck

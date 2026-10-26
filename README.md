@@ -5,10 +5,15 @@
 
 ### About this repository
 
-Contains two applications that work in tandem:
+Contains two applications:
 
-1. api: A Scala KenKen solver deployed as an API using the [Serverless](https://serverless.com/) framework.
-2. web: A React SPA deployed to AWS and served over Cloudfront.
+1. web: A React SPA built with Vite. The KenKen solver runs entirely in the browser
+   in a Web Worker, so puzzles are solved without a network call. Deployed to AWS
+   and served over Cloudfront.
+2. api: The original Scala KenKen solver, deployed as an API using the
+   [Serverless](https://serverless.com/) framework. It is kept for reference and
+   parity testing while the client-side solver ships; it is no longer called by the
+   web app.
 
 They are deployed using GitHub Actions.
 

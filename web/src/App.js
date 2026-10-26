@@ -11,6 +11,7 @@ import Modal from './components/Modal';
 import SolveButton from './components/SolveButton';
 import SolveLifecycle from './SolveLifecycle';
 import Tooltip from './components/Tooltip';
+import { solveInWorker } from './solver/workerClient';
 
 import update from 'immutability-helper';
 
@@ -150,16 +151,16 @@ class App extends React.Component {
       showTooltip: false,
     })
 
-    fetch("https://api.kenken.gg/solve", {
-      method: "post",
-      body: JSON.stringify({
-        constraintString: constraintString,
-        boardStrings: boardStrings,
-      })
-    })
-      .then(res => res.json())
+    // The solver runs in a Web Worker in the page itself; no network call is made.
+    solveInWorker(boardStrings, constraintString)
       .then((data) => {
-        console.log(data.boardOutput);
+        if (!data.solved || data.boardOutput === null) {
+          this.setState({
+            solveLifecycle: SolveLifecycle.Failure,
+            showTooltip: true,
+          });
+          return;
+        }
         this.setState({
           answers: data.boardOutput.split(/\s/),
           solveLifecycle: SolveLifecycle.Success,
