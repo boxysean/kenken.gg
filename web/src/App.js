@@ -36,9 +36,9 @@ class App extends React.Component {
     this.TOOLTIP_MESSAGE[SolveLifecycle.Failure] = "Failed solving! :-(";
     this.TOOLTIP_MESSAGE[SolveLifecycle.Inputting] = "Draw your KenKen board here!";
 
-    this.TOOLTIP_COLOR[SolveLifecycle.Success] = "rgba(0, 255, 0, 0.3)";
-    this.TOOLTIP_COLOR[SolveLifecycle.Failure] = "rgba(255, 0, 0, 0.3)";
-    this.TOOLTIP_COLOR[SolveLifecycle.Inputting] = "rgba(0, 0, 0, 0.3)";
+    this.TOOLTIP_COLOR[SolveLifecycle.Success] = "rgba(220, 252, 231, 0.95)";
+    this.TOOLTIP_COLOR[SolveLifecycle.Failure] = "rgba(254, 226, 226, 0.95)";
+    this.TOOLTIP_COLOR[SolveLifecycle.Inputting] = "rgba(226, 232, 240, 0.95)";
 
     this.state = {
       boardSize: 5,
@@ -210,6 +210,7 @@ class App extends React.Component {
     return (
       <div
         className="App"
+        data-solve-state={this.state.solveLifecycle}
         onMouseUp={(event) => this.processRelease(event)}
         onTouchMove={(event) => this.processTouchMove(event)}
         onTouchEnd={(event) => this.processRelease(event)}

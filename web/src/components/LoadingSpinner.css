@@ -1,6 +1,6 @@
 .LoadingSpinner {
   z-index: 10;
-  color: #000000;
+  color: var(--accent);
   justify-content: center;
   display: flex;
   align-items: center;

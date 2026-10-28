@@ -1,9 +1,37 @@
 .BoardContainer {
+  /* --board-size is set inline from Board.js */
+  --board-width: min(92vw, 520px);
+  --cell-size: calc(var(--board-width) / var(--board-size, 5));
+
   position: relative;
+  box-sizing: border-box;
+  width: var(--board-width);
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+  margin-block: 8px 4px;
   text-align: center;
   align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  /* Clip the grid to the rounded card. The tooltip and spinner overlays are sized to
+     this box, so they sit entirely inside it and are not clipped. */
+  overflow: hidden;
+}
 
-  margin-bottom: 1em;
+/* Outer cage frame for the rounded corners. The straight frame edges (.Board top/left,
+   edge cells' right/bottom) are clipped at the corners; this traces the clip curve
+   (12px card radius minus the 1px card border) on top of them. Positioned children
+   with a z-index (tooltip, spinner) still paint above it. */
+.BoardContainer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--cage-border);
+  border-radius: 11px;
+  pointer-events: none;
+  transition: opacity 200ms ease;
 }
 
 .BoardContainer > div {
@@ -13,6 +41,22 @@
 }
 
 .Board {
-  text-align: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
   display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  text-align: center;
+  /* Cells draw their own right/bottom edges; the board draws the outer top/left frame. */
+  border-top: 2px solid var(--cage-border);
+  border-left: 2px solid var(--cage-border);
+  overflow: hidden;
+  transition: opacity 200ms ease;
+}
+
+/* Pending (SolveLifecycle.Pending = 2): dim the board, frame included, while the
+   spinner is up */
+.App[data-solve-state="2"] .Board,
+.App[data-solve-state="2"] .BoardContainer::after {
+  opacity: 0.45;
 }

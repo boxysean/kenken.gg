@@ -13,7 +13,7 @@ class LoadingSpinner extends React.Component {
 
     return (
       <div className="LoadingSpinner"  style={loadingDisplayStyle}>
-        <Spinner color="#4CA7FD" size={100} />
+        <Spinner color="var(--accent, #4338ca)" size={100} />
       </div>
     );
   }

@@ -1,6 +1,6 @@
 .TooltipContainer {
   z-index: 10;
-  color: #000000;
+  color: var(--neutral-ink);
   justify-content: center;
   display: flex;
   align-items: center;
@@ -9,10 +9,39 @@
 }
 
 .Tooltip {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 1em;
-  margin: 2em;
-  border-radius: 25px;
+  /* background-color comes inline from App.js TOOLTIP_COLOR; the state rules below
+     override it with token colours (so the dark theme gets its own surfaces). */
+  max-width: calc(100% - 48px);
+  padding: 12px 20px;
+  margin: 24px;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: var(--neutral-ink);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.Tooltip p {
+  margin: 0;
+}
+
+/* State from SolveLifecycle: 1 = Inputting, 3 = Success, 4 = Failure */
+.App[data-solve-state="1"] .Tooltip {
+  color: var(--neutral-ink);
+  background-color: var(--neutral-bg) !important;
+}
+
+.App[data-solve-state="3"] .Tooltip {
+  color: var(--success-ink);
+  background-color: var(--success-bg) !important;
+}
+
+.App[data-solve-state="4"] .Tooltip {
+  color: var(--failure-ink);
+  background-color: var(--failure-bg) !important;
 }
 
 .Tooltip-enter {
@@ -35,4 +64,11 @@
 
 .Tooltip-exit-done {
   display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Tooltip-enter-active,
+  .Tooltip-exit-active {
+    transition: none;
+  }
 }
