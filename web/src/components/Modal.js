@@ -45,20 +45,22 @@ class Modal extends React.Component {
     return (
       <div className="Modal ModalOn">
         <div className="ModalContent">
-          <span onClick={(event) => this.close(event)} className="Close">&times;</span>
+          <button type="button" onClick={(event) => this.close(event)} className="Close" aria-label="Close">&times;</button>
           <div>
             <input
               className="ModalInput"
+              aria-label="Cage value"
+              inputMode="numeric"
               autoFocus
               onChange={event => this.handleChange(event)}>
             </input>
           </div>
           <div className="ModalButtons">
-            <Button onClick={(event) => this.handleButton(event, "+")}>+</Button>
-            <Button onClick={(event) => this.handleButton(event, "-")}>-</Button>
-            <Button onClick={(event) => this.handleButton(event, "x")}>x</Button>
-            <Button onClick={(event) => this.handleButton(event, "/")}>/</Button>
-            <Button onClick={(event) => this.handleButton(event, "")}>&nbsp;</Button>
+            <Button aria-label="Add" onClick={(event) => this.handleButton(event, "+")}>+</Button>
+            <Button aria-label="Subtract" onClick={(event) => this.handleButton(event, "-")}>-</Button>
+            <Button aria-label="Multiply" onClick={(event) => this.handleButton(event, "x")}>x</Button>
+            <Button aria-label="Divide" onClick={(event) => this.handleButton(event, "/")}>/</Button>
+            <Button aria-label="No operator" onClick={(event) => this.handleButton(event, "")}>&nbsp;</Button>
           </div>
         </div>
       </div>

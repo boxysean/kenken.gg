@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from 'react-pushy-buttons';
 import './SolveButton.css';
-import 'react-pushy-buttons/css/pushy-buttons.css'
+import './pushy-buttons.css'
 import classNames from 'classnames';
 
 let cx = classNames;

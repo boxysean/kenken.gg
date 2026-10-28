@@ -1,3 +1,19 @@
 .ButtonWrapper {
-  margin: 1em;
+  margin: 16px 0 0;
+}
+
+/* Clear: neutral outline (.btn.btn--blue outranks the shared .ButtonWrapper .btn rules) */
+.ButtonWrapper .btn.btn--blue {
+  color: var(--ink);
+  background-color: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--hairline), var(--shadow-card);
+}
+
+.ButtonWrapper .btn.btn--blue:hover {
+  background-color: var(--cage-fill);
+  box-shadow: inset 0 0 0 2px var(--ink-soft), var(--shadow-card);
+}
+
+.ButtonWrapper .btn.btn--blue:active {
+  box-shadow: inset 0 0 0 2px var(--ink-soft);
 }

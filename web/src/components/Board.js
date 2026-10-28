@@ -53,8 +53,7 @@ class Board extends React.Component {
 
   render() {
     var boardContainerStyle = {
-      'width': this.props.size * 50 + 4,
-      'height': this.props.size * 50 + 4,
+      '--board-size': this.props.size,
     };
 
     if ([SolveLifecycle.Inputting, SolveLifecycle.Failure].indexOf(this.props.solveLifecycle) >= 0) {
@@ -62,7 +61,7 @@ class Board extends React.Component {
     }
 
     var gridColumnTemplateStyle = {
-      'gridTemplateColumns': `repeat(${this.props.size}, 50px)`
+      'gridTemplateColumns': `repeat(${this.props.size}, minmax(0, 1fr))`
     };
 
     return (
