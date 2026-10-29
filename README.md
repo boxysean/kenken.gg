@@ -10,10 +10,8 @@ Contains two applications:
 1. web: A React SPA built with Vite. The KenKen solver runs entirely in the browser
    in a Web Worker, so puzzles are solved without a network call. Deployed to Netlify
    as a static site.
-2. api: The original Scala KenKen solver, deployed as an API using the
-   [Serverless](https://serverless.com/) framework. It is kept for reference and
-   parity testing while the client-side solver ships; it is no longer called by the
-   web app.
+2. api: The original Scala KenKen solver. It is no longer deployed or called by the
+   web app; it is kept for reference and parity testing of the TypeScript port.
 
 ### Development
 
