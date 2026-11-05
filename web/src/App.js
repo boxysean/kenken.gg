@@ -129,9 +129,6 @@ class App extends React.Component {
   }
 
   submit() {
-    console.log(this.state.cellToConstraint);
-    console.log(this.state.constraintCharToFormula);
-
     var constraintString = _.uniq(
       Object.values(this.state.cellToConstraint)
         .map((constraint) => constraint.name + "=" + constraint.formula)
@@ -141,10 +138,6 @@ class App extends React.Component {
       Object.values(this.state.cellToConstraint).map((constraint) => constraint.name),
       this.state.boardSize
     ).map((chunk) => chunk.join(" "));
-
-    console.log("SUBMITTING");
-    console.log(constraintString);
-    console.log(boardStrings);
 
     this.setState({
       solveLifecycle: SolveLifecycle.Pending,
@@ -172,7 +165,7 @@ class App extends React.Component {
           solveLifecycle: SolveLifecycle.Failure,
           showTooltip: true,
         });
-        console.log(error);
+        console.error(error);
       });
   }
 
