@@ -12,6 +12,8 @@ import SolveButton from './components/SolveButton';
 import SolveLifecycle from './SolveLifecycle';
 import Tooltip from './components/Tooltip';
 import { solveInWorker } from './solver/workerClient';
+import PlayApp from './play/PlayApp';
+import { loadPrefs, savePrefs } from './play/persistence';
 
 import update from 'immutability-helper';
 
@@ -44,6 +46,7 @@ class App extends React.Component {
       boardSize: 5,
       showTooltip: true,
       debugOverlay: window.location.href.includes("debug=true"),
+      mode: loadPrefs().mode,
       ...this.DEFAULT_STATE,
     };
   }
@@ -195,25 +198,21 @@ class App extends React.Component {
     });
   }
 
+  changeMode(mode) {
+    this.setState({
+      mode: mode,
+    });
+
+    savePrefs({ ...loadPrefs(), mode: mode });
+  }
+
   canSubmit() {
     return this.isBoardFull() && [SolveLifecycle.Failure, SolveLifecycle.Inputting].indexOf(this.state.solveLifecycle) >= 0;
   }
 
-  render() {
+  renderSolver() {
     return (
-      <div
-        className="App"
-        data-solve-state={this.state.solveLifecycle}
-        onMouseUp={(event) => this.processRelease(event)}
-        onTouchMove={(event) => this.processTouchMove(event)}
-        onTouchEnd={(event) => this.processRelease(event)}
-      >
-        <Helmet>
-          <title>kenken.gg</title>
-        </Helmet>
-
-        <h1 className="Title">kenken.gg</h1>
-
+      <>
         <BoardSlider
           boardSize={this.state.boardSize}
           onChange={this.changeBoardSize.bind(this)}
@@ -269,6 +268,43 @@ class App extends React.Component {
             <li>Board cells constraints? {JSON.stringify(this.state.cellToConstraint)}</li>
           </ul>
         }
+      </>
+    );
+  }
+
+  render() {
+    return (
+      <div
+        className="App"
+        data-solve-state={this.state.solveLifecycle}
+        onMouseUp={(event) => this.processRelease(event)}
+        onTouchMove={(event) => this.processTouchMove(event)}
+        onTouchEnd={(event) => this.processRelease(event)}
+      >
+        <Helmet>
+          <title>kenken.gg</title>
+        </Helmet>
+
+        <h1 className="Title">kenken.gg</h1>
+
+        <div className="ModeToggle" role="group" aria-label="Mode">
+          <button
+            type="button"
+            className="ModeToggleButton"
+            data-testid="mode-toggle-solver"
+            aria-pressed={this.state.mode === 'solver'}
+            onClick={() => this.changeMode('solver')}
+          >Solver</button>
+          <button
+            type="button"
+            className="ModeToggleButton"
+            data-testid="mode-toggle-play"
+            aria-pressed={this.state.mode === 'play'}
+            onClick={() => this.changeMode('play')}
+          >Play</button>
+        </div>
+
+        {this.state.mode === 'play' ? <PlayApp /> : this.renderSolver()}
 
         <p><a href="/about.html">About</a></p>
       </div>
