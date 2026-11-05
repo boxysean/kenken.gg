@@ -13,8 +13,6 @@ class Cell extends React.Component {
   }
 
   render() {
-    console.log(this.props.constraint);
-
     let className = cx({
       Cell: true,
       isSelected: this.props.isSelected,
