@@ -1,0 +1,52 @@
+.PlayBoard {
+  /* --board-size is set inline from PlayBoard.tsx */
+  --board-width: min(92vw, 520px);
+  --cell-size: calc(var(--board-width) / var(--board-size, 5));
+
+  position: relative;
+  box-sizing: border-box;
+  width: var(--board-width);
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+  margin-block: 8px 4px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* Rounded outer cage frame, as on the solver board (see Board.css). */
+.PlayBoard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--cage-border);
+  border-radius: 11px;
+  pointer-events: none;
+}
+
+.PlayBoardGrid {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  border-top: 2px solid var(--cage-border);
+  border-left: 2px solid var(--cage-border);
+}
+
+/* Rows exist for the grid/row/gridcell ARIA structure only; the cells lay
+   out directly in the CSS grid. */
+.PlayBoardRow {
+  display: contents;
+}
+
+/* Pencil mode tints the frame so the mode is visible on the board itself. */
+.PlayBoard[data-pencil-mode="true"]::after {
+  border-color: var(--accent);
+}
+
+.PlayApp[data-play-state="3"] .PlayBoard {
+  border-color: var(--success-ink);
+}

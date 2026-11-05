@@ -1,0 +1,252 @@
+/* Solver / Play switch rendered by App.js. It lives here rather than in
+   App.css so the solver's stylesheet stays exactly as it was. */
+.ModeToggle {
+  display: inline-flex;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+}
+
+.ModeToggleButton {
+  min-width: 96px;
+  min-height: 40px;
+  padding: 0 18px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ModeToggleButton[aria-pressed="true"] {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+
+.ModeToggleButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.PlayApp {
+  box-sizing: border-box;
+  width: min(92vw, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Choosing */
+.PlayChoose {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.PlayCard {
+  box-sizing: border-box;
+  padding: 16px 20px 20px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.PlayCardTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.PlayCardMeta {
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.PlayCardStatus {
+  margin: 8px 0 0;
+  font-weight: 600;
+  color: var(--neutral-ink);
+}
+
+.PlayCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.PlaySize {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.PlaySizeLabel {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+/* Buttons */
+.PlayButton {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 16px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-control);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.PlayButton:hover {
+  background: var(--cage-fill);
+}
+
+.PlayButton:active {
+  transform: translateY(1px);
+}
+
+.PlayButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.PlayButtonPrimary {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.PlayButtonPrimary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, var(--ink));
+}
+
+.PlayButtonDanger {
+  color: var(--failure-ink);
+  background: var(--failure-bg);
+  border-color: var(--failure-bg);
+}
+
+.PlayButton[aria-pressed="true"] {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Playing */
+.PlayGame {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.PlayHeader {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 0 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.PlayHeaderTitle,
+.PlayHintCount {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.PlayTimer {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.PlayWon {
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  color: var(--success-ink);
+  background: var(--success-bg);
+  border-radius: var(--radius-control);
+}
+
+.PlayControls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.PlayNumpad {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  gap: 6px;
+}
+
+.PlayNumpadKey {
+  padding: 0;
+  min-height: 52px;
+  font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.PlayTools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.PlayConfirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 8px;
+  font-weight: 600;
+  color: var(--failure-ink);
+}
+
+.PlayStatus {
+  min-height: 1.5em;
+  margin: 4px 0 0;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .PlayButton {
+    transition: none;
+  }
+
+  .PlayButton:active {
+    transform: none;
+  }
+}
