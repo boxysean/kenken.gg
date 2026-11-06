@@ -13,6 +13,7 @@ import './PlayApp.css';
 const MAX_HISTORY = 200;
 const MIN_PRACTICE_SIZE = 4;
 const MAX_PRACTICE_SIZE = 9;
+const CONFETTI_PIECES = 8;
 
 const ARROWS: Record<string, [number, number]> = {
   ArrowUp: [-1, 0],
@@ -110,6 +111,8 @@ class PlayApp extends React.Component<{}, PlayAppState> {
   timer: ReturnType<typeof setInterval> | null = null;
   hidden = false;
   unmounted = false;
+  // Motion for the win celebration; off when the player asks for reduced motion.
+  celebrate = true;
 
   constructor(props: {}) {
     super(props);
@@ -137,6 +140,8 @@ class PlayApp extends React.Component<{}, PlayAppState> {
   }
 
   componentDidMount() {
+    this.celebrate = typeof window.matchMedia !== 'function'
+      || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.hidden = document.visibilityState === 'hidden';
     this.timer = setInterval(this.tick, 1000);
     document.addEventListener('keydown', this.handleKeyDown, false);
@@ -330,10 +335,13 @@ class PlayApp extends React.Component<{}, PlayAppState> {
 
   applyEdit(edit: CellEdit) {
     if (sameContent(edit.before, edit.after)) return;
+    const next = withContent(this.state.game!, edit.cell, edit.after);
+    const undo = [...this.state.undo, edit].slice(-MAX_HISTORY);
+    if (this.maybeWin(next, undo)) return;
     this.setState({
-      game: withContent(this.state.game!, edit.cell, edit.after),
+      game: next,
       wrong: update(this.state.wrong, { [edit.cell]: { $set: false } }),
-      undo: [...this.state.undo, edit].slice(-MAX_HISTORY),
+      undo,
       redo: [],
       status: '',
     });
@@ -346,8 +354,10 @@ class PlayApp extends React.Component<{}, PlayAppState> {
       this.setState({ undo, status: 'Nothing to undo' });
       return;
     }
+    const next = withContent(game, edit.cell, edit.before);
+    if (this.maybeWin(next, undo)) return;
     this.setState({
-      game: withContent(game, edit.cell, edit.before),
+      game: next,
       wrong: update(this.state.wrong, { [edit.cell]: { $set: false } }),
       undo,
       redo: [...this.state.redo, edit].slice(-MAX_HISTORY),
@@ -363,10 +373,13 @@ class PlayApp extends React.Component<{}, PlayAppState> {
       this.setState({ redo, status: 'Nothing to redo' });
       return;
     }
+    const next = withContent(game, edit.cell, edit.after);
+    const undo = [...this.state.undo, edit].slice(-MAX_HISTORY);
+    if (this.maybeWin(next, undo)) return;
     this.setState({
-      game: withContent(game, edit.cell, edit.after),
+      game: next,
       wrong: update(this.state.wrong, { [edit.cell]: { $set: false } }),
-      undo: [...this.state.undo, edit].slice(-MAX_HISTORY),
+      undo,
       redo,
       focused: edit.cell,
       status: '',
@@ -398,10 +411,21 @@ class PlayApp extends React.Component<{}, PlayAppState> {
     });
   }
 
-  win(game: Game) {
+  // A correct, complete board is a win; a complete-but-wrong board stays silent.
+  // Silence is deliberate: wrong cells belong to check(), and auto-flagging them
+  // would make Check redundant.
+  maybeWin(game: Game, undo: CellEdit[]): boolean {
+    if (!game.values.every((value) => value !== 0)) return false;
+    if (!game.values.every((value, i) => value === game.puzzle.solution[i])) return false;
+    this.win(game, undo);
+    return true;
+  }
+
+  win(game: Game, undo?: CellEdit[]) {
     this.setState({
       lifecycle: PlayLifecycle.Won,
       game: { ...game, locked: game.locked.map(() => true) },
+      undo: undo === undefined ? this.state.undo : undo,
       wrong: game.values.map(() => false),
       focused: null,
       status: '',
@@ -428,10 +452,7 @@ class PlayApp extends React.Component<{}, PlayAppState> {
       locked: { [target]: { $set: true } },
       hints: { $set: game.hints + 1 },
     });
-    if (next.values.every((value, i) => value === solution[i])) {
-      this.win(next);
-      return;
-    }
+    if (this.maybeWin(next, this.state.undo)) return;
     this.setState({
       game: next,
       wrong: update(this.state.wrong, { [target]: { $set: false } }),
@@ -589,10 +610,23 @@ class PlayApp extends React.Component<{}, PlayAppState> {
     const title = game.dailyDate === null ? `Practice ${size}×${size}` : `Daily ${game.dailyDate}`;
 
     if (this.state.lifecycle === PlayLifecycle.Won) {
+      const celebrate = this.celebrate;
       return (
-        <div className="PlayHeader PlayWon" data-testid="play-won">
-          <strong>Solved!</strong>
-          <span>
+        <div
+          className={'PlayWonPanel' + (celebrate ? ' isCelebrating' : '')}
+          data-testid="play-won"
+          role="status"
+          aria-live="polite"
+        >
+          {celebrate ? (
+            <span className="PlayConfetti" aria-hidden="true">
+              {Array.from({ length: CONFETTI_PIECES }, (_, i) => (
+                <span key={i} style={{ '--i': i } as React.CSSProperties} />
+              ))}
+            </span>
+          ) : null}
+          <strong className="PlayWonTitle">Solved!</strong>
+          <span className="PlayWonMeta">
             {title} in {formatElapsed(game.elapsed)} · {formatHints(game.hints)}
           </span>
         </div>
@@ -731,7 +765,7 @@ class PlayApp extends React.Component<{}, PlayAppState> {
 
   renderWonActions() {
     return (
-      <div className="PlayTools">
+      <div className="PlayTools PlayWonActions">
         <button
           type="button"
           className="PlayButton PlayButtonPrimary"
@@ -767,17 +801,19 @@ class PlayApp extends React.Component<{}, PlayAppState> {
       <div className="PlayGame">
         {this.renderHeader(game)}
 
-        <PlayBoard
-          puzzle={game.puzzle}
-          values={game.values}
-          pencils={game.pencils}
-          locked={game.locked}
-          wrong={this.state.wrong}
-          focused={this.state.focused}
-          pencilMode={this.state.pencilMode}
-          checkRound={this.state.checkRound}
-          onFocusCell={this.focusCell}
-        />
+        <div className={'PlayBoardFrame' + (won && this.celebrate ? ' isCelebrating' : '')}>
+          <PlayBoard
+            puzzle={game.puzzle}
+            values={game.values}
+            pencils={game.pencils}
+            locked={game.locked}
+            wrong={this.state.wrong}
+            focused={this.state.focused}
+            pencilMode={this.state.pencilMode}
+            checkRound={this.state.checkRound}
+            onFocusCell={this.focusCell}
+          />
+        </div>
 
         {won ? this.renderWonActions() : this.renderControls(game)}
 

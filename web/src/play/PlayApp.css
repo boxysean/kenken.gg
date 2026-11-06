@@ -189,13 +189,111 @@
   color: var(--ink);
 }
 
-.PlayWon {
-  justify-content: center;
-  flex-wrap: wrap;
-  padding: 8px 16px;
+/* Won */
+.PlayWonPanel {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 16px 20px;
+  text-align: center;
   color: var(--success-ink);
   background: var(--success-bg);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
+}
+
+.PlayWonTitle {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.PlayWonMeta {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.PlayWonPanel.isCelebrating {
+  animation: play-won-in 350ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes play-won-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.PlayConfetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Eight squares fan out from the top centre: --i picks the angle and the
+   stagger, so no piece needs its own rule. */
+.PlayConfetti > span {
+  --spread: calc((var(--i) - 3.5) * 34px);
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--success-ink);
+  opacity: 0;
+  animation: play-confetti 900ms ease-out calc(var(--i) * 25ms) 1 both;
+}
+
+.PlayConfetti > span:nth-child(odd) {
+  background: var(--accent);
+}
+
+@keyframes play-confetti {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--spread)), 72px) rotate(200deg);
+  }
+}
+
+/* Only a glow, never movement: the solved grid stays put to be admired. */
+.PlayBoardFrame {
+  width: 100%;
+}
+
+.PlayBoardFrame.isCelebrating > .PlayBoard {
+  animation: play-board-pulse 700ms ease-out 1;
+}
+
+@keyframes play-board-pulse {
+  0% {
+    box-shadow: var(--shadow-card), 0 0 0 0 var(--success-bg);
+  }
+  40% {
+    box-shadow: var(--shadow-card), 0 0 0 8px var(--success-bg);
+  }
+  100% {
+    box-shadow: var(--shadow-card), 0 0 0 0 transparent;
+  }
+}
+
+.PlayWonActions {
+  margin-top: 8px;
 }
 
 .PlayControls {
@@ -248,5 +346,14 @@
 
   .PlayButton:active {
     transform: none;
+  }
+
+  .PlayWonPanel.isCelebrating,
+  .PlayBoardFrame.isCelebrating > .PlayBoard {
+    animation: none;
+  }
+
+  .PlayConfetti {
+    display: none;
   }
 }

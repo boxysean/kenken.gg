@@ -166,10 +166,157 @@ test('checking a full but wrong grid marks wrong cells and locks the right ones'
   expect(get('play-cell-5').getAttribute('data-locked')).toBe('true');
   expect(query('play-won')).toBeNull();
 
-  // Fixing the wrong cell and checking again wins.
+  // Fixing the wrong cell completes the board, which wins on its own.
   typeInto(0, solution[0]);
-  click(get('play-check'));
   expect(query('play-won')).not.toBeNull();
+});
+
+function solutionOnBoard(): number[] {
+  return generate(get('play-board').getAttribute('data-seed')!, 4).solution;
+}
+
+test('typing the final correct digit wins without pressing Check', () => {
+  mount();
+  click(get('play-practice-button'));
+  const solution = solutionOnBoard();
+
+  for (let cell = 0; cell < 15; cell++) typeInto(cell, solution[cell]);
+  expect(query('play-won')).toBeNull();
+
+  typeInto(15, solution[15]);
+  expect(query('play-won')).not.toBeNull();
+  expect(get('play-won').textContent).toContain('Solved!');
+});
+
+test('a complete but wrong board stays silent until Check', () => {
+  mount();
+  click(get('play-practice-button'));
+  const solution = solutionOnBoard();
+
+  for (let cell = 0; cell < 15; cell++) typeInto(cell, solution[cell]);
+  typeInto(15, (solution[15] % 4) + 1);
+
+  const last = get('play-cell-15');
+  expect(last.className).not.toContain('isWrong');
+  expect(last.getAttribute('data-locked')).toBe('false');
+  expect(container.querySelector('.isWrong')).toBeNull();
+  expect(container.querySelector('[data-locked="true"]')).toBeNull();
+  expect(query('play-won')).toBeNull();
+  expect(get('play-status').textContent).not.toContain('Some cells are wrong');
+  // Still playing: the controls are there.
+  expect(query('play-check')).not.toBeNull();
+});
+
+test('the win carries the elapsed time and the hint count', () => {
+  mount();
+  click(get('play-practice-button'));
+  const solution = solutionOnBoard();
+
+  for (let cell = 0; cell < 16; cell++) typeInto(cell, solution[cell]);
+  expect(get('play-won').textContent).toContain('0:00');
+  expect(get('play-won').textContent).toContain('0 hints');
+
+  click(get('play-next-practice'));
+  const next = solutionOnBoard();
+  click(get('play-cell-0'));
+  click(get('play-hint'));
+  for (let cell = 1; cell < 16; cell++) typeInto(cell, next[cell]);
+  expect(get('play-won').textContent).toContain('1 hint');
+  expect(get('play-won').textContent).not.toContain('1 hints');
+});
+
+test('a hint that fills the last cell wins', () => {
+  mount();
+  click(get('play-practice-button'));
+  const solution = solutionOnBoard();
+
+  for (let cell = 0; cell < 15; cell++) typeInto(cell, solution[cell]);
+  expect(query('play-won')).toBeNull();
+
+  click(get('play-cell-15'));
+  click(get('play-hint'));
+  expect(query('play-won')).not.toBeNull();
+  expect(get('play-won').textContent).toContain('1 hint');
+});
+
+test('a win cannot be undone, and a restarted board wins again', () => {
+  mount();
+  click(get('play-practice-button'));
+  const solution = solutionOnBoard();
+
+  // Restart one step short of the win: it clears, and the same values win.
+  for (let cell = 0; cell < 15; cell++) typeInto(cell, solution[cell]);
+  click(get('play-restart'));
+  click(get('play-restart-yes'));
+  for (let cell = 0; cell < 16; cell++) {
+    expect(get('play-cell-' + cell).querySelector('.PlayCellValue')).toBeNull();
+  }
+  for (let cell = 0; cell < 16; cell++) typeInto(cell, solution[cell]);
+  expect(query('play-won')).not.toBeNull();
+
+  // Once won, the playing controls are gone and every cell is settled.
+  expect(query('play-undo')).toBeNull();
+  expect(query('play-check')).toBeNull();
+  expect(query('play-restart')).toBeNull();
+  for (let cell = 0; cell < 16; cell++) {
+    expect(get('play-cell-' + cell).getAttribute('data-locked')).toBe('true');
+  }
+
+  const before = get('play-board').textContent;
+  press('u');
+  expect(get('play-board').textContent).toBe(before);
+  expect(query('play-won')).not.toBeNull();
+});
+
+describe('the win celebration and reduced motion', () => {
+  const original = window.matchMedia;
+
+  function stubReducedMotion(reduce: boolean): void {
+    window.matchMedia = ((media: string) => ({
+      matches: reduce && media === '(prefers-reduced-motion: reduce)',
+      media,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+  }
+
+  afterEach(() => {
+    window.matchMedia = original;
+  });
+
+  function winPractice(): HTMLElement {
+    click(get('play-practice-button'));
+    const solution = solutionOnBoard();
+    for (let cell = 0; cell < 16; cell++) typeInto(cell, solution[cell]);
+    return get('play-won');
+  }
+
+  test('reduced motion keeps the panel legible and still', () => {
+    stubReducedMotion(true);
+    mount();
+    const panel = winPractice();
+    expect(panel.textContent).toContain('Solved!');
+    expect(panel.className).toContain('PlayWonPanel');
+    expect(panel.className).not.toContain('isCelebrating');
+    expect(panel.querySelector('.PlayConfetti')).toBeNull();
+    expect(container.querySelector('.PlayBoardFrame.isCelebrating')).toBeNull();
+  });
+
+  test('without reduced motion the panel celebrates', () => {
+    stubReducedMotion(false);
+    mount();
+    const panel = winPractice();
+    expect(panel.textContent).toContain('Solved!');
+    expect(panel.className).toContain('isCelebrating');
+    expect(panel.querySelectorAll('.PlayConfetti > span').length).toBe(8);
+    expect(container.querySelector('.PlayBoardFrame.isCelebrating')).not.toBeNull();
+    // Still the same board underneath, not an overlay.
+    expect(query('play-board')).not.toBeNull();
+  });
 });
 
 test('a hint reveals a value, counts, locks, and cannot be undone', () => {
@@ -243,7 +390,8 @@ test('a full keyboard playthrough wins and produces a spoiler-free share string'
   click(get('play-practice-button'));
   const puzzle = generate(get('play-board').getAttribute('data-seed')!, 4);
 
-  // Every value is entered by keystroke, then won with the Check shortcut.
+  // Every value is entered by keystroke; the last one wins, so the Check
+  // shortcut after it is a harmless no-op.
   for (let cell = 0; cell < 16; cell++) {
     click(get('play-cell-' + cell));
     press(String(puzzle.solution[cell]));
