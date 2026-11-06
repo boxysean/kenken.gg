@@ -30,7 +30,7 @@ class Cell extends React.Component {
         onTouchStart={(event) => this.props.processBegin(this.props.cellIndex)}
         id={"cell-" + this.props.cellIndex}
       >
-        {this.props.display}
+        <span className="CellLabel">{this.props.display}</span>
       </div>
     );
   }

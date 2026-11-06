@@ -54,6 +54,18 @@
   }
 }
 
+/* The cage-label face: a rounded display font for the `9+` in a cage's first cell.
+   Self-hosted woff2 subset (digits and + − × ÷ only, see public/fonts/) so the label
+   never depends on a third-party font host. Kept out of the token block above, which
+   must stay identical to public/main.css. */
+@font-face {
+  font-family: "Baloo 2";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/baloo2-cage-700.woff2") format("woff2");
+}
+
 .App {
   text-align: center;
   min-height: 100vh;
