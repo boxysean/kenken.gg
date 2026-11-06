@@ -1,5 +1,7 @@
 .Cell {
   box-sizing: border-box;
+  /* Same label scale as the Play board (see PlayCell.css), so both surfaces match. */
+  --cage-label-size: clamp(0.625rem, calc(var(--cell-size) * 0.3), 1.25rem);
   width: 100%;
   height: 100%;
   min-width: 0;
@@ -35,6 +37,19 @@
   user-select: none;
 
   touch-action: none;
+}
+
+/* The cage label itself -- the `9+` in the first cell of a cage, and in the solved
+   state the answer digit(s). A rounded display face, and a size that tracks the cell
+   (--cell-size is set on .BoardContainer) rather than the viewport, so it stays legible
+   on a 3x3 board on a phone and does not overflow the smallest cell at 9x9.
+   No tabular-nums: Baloo 2 has no tabular figures, and these are 2-4 character labels. */
+.CellLabel {
+  font-family: "Baloo 2", var(--font-sans);
+  font-weight: 700;
+  font-size: var(--cage-label-size);
+  line-height: 1.1;
+  letter-spacing: 0;
 }
 
 .isGreyedOut {
@@ -74,6 +89,16 @@
   font-size: clamp(1rem, calc(var(--cell-size) * 0.5), 2.25rem);
   color: var(--ink);
   animation: CellAnswerIn 240ms ease-out both;
+}
+
+/* ...and the answer inside it keeps the size/weight .Cell sets above and the page's
+   own face, so the solved state looks exactly as it did before the label restyle. */
+.App[data-solve-state="3"] .CellLabel {
+  font-family: inherit;
+  font-weight: 600;
+  font-size: inherit;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 @keyframes CellAnswerIn {
