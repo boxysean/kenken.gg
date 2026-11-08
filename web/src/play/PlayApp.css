@@ -6,9 +6,9 @@
   margin: 8px 0 0;
   padding: 4px;
   background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  box-shadow: var(--shadow-card);
+  border: 3px solid var(--cage-border);
+  border-radius: 0;
+  box-shadow: var(--shadow-control);
 }
 
 .ModeToggleButton {
@@ -17,21 +17,30 @@
   padding: 0 18px;
   font-family: var(--font-sans);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--ink-soft);
   background: transparent;
-  border: 0;
-  border-radius: 999px;
+  /* Transparent until pressed, so the pressed segment gets a hard edge without the
+     row shifting. */
+  border: 3px solid transparent;
+  border-radius: 0;
   cursor: pointer;
 }
 
 .ModeToggleButton[aria-pressed="true"] {
   color: var(--accent-ink);
   background: var(--accent);
+  border-color: var(--cage-border);
+}
+
+.ModeToggleButton:active {
+  transform: translate(2px, 2px);
 }
 
 .ModeToggleButton:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -57,7 +66,7 @@
   padding: 16px 20px 20px;
   text-align: left;
   background: var(--surface);
-  border: 1px solid var(--hairline);
+  border: 3px solid var(--cage-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
@@ -65,12 +74,14 @@
 .PlayCardTitle {
   margin: 0;
   font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 .PlayCardMeta {
   margin: 2px 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
   color: var(--ink-soft);
 }
@@ -97,7 +108,9 @@
 }
 
 .PlaySizeLabel {
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
   color: var(--ink-soft);
 }
@@ -112,11 +125,11 @@
   font-weight: 600;
   color: var(--ink);
   background: var(--surface);
-  border: 1px solid var(--hairline);
+  border: 3px solid var(--cage-border);
   border-radius: var(--radius-control);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-control);
   cursor: pointer;
-  transition: background-color 120ms ease, transform 120ms ease;
+  transition: background-color 80ms ease, box-shadow 80ms ease, transform 80ms ease;
 }
 
 .PlayButton:hover {
@@ -124,18 +137,18 @@
 }
 
 .PlayButton:active {
-  transform: translateY(1px);
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-press);
 }
 
 .PlayButton:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
 .PlayButtonPrimary {
   color: var(--accent-ink);
   background: var(--accent);
-  border-color: var(--accent);
 }
 
 .PlayButtonPrimary:hover {
@@ -145,13 +158,11 @@
 .PlayButtonDanger {
   color: var(--failure-ink);
   background: var(--failure-bg);
-  border-color: var(--failure-bg);
 }
 
 .PlayButton[aria-pressed="true"] {
   color: var(--accent-ink);
   background: var(--accent);
-  border-color: var(--accent);
 }
 
 /* Playing */
@@ -178,7 +189,9 @@
 
 .PlayHeaderTitle,
 .PlayHintCount {
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--ink-soft);
 }
 
@@ -204,14 +217,16 @@
   text-align: center;
   color: var(--success-ink);
   background: var(--success-bg);
+  border: 3px solid var(--cage-border);
   border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 
 .PlayWonTitle {
   font-size: 2.5rem;
   font-weight: 800;
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
 
 .PlayWonMeta {
@@ -250,7 +265,7 @@
   left: 50%;
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--success-ink);
   opacity: 0;
   animation: play-confetti 900ms ease-out calc(var(--i) * 25ms) 1 both;
@@ -335,7 +350,9 @@
 .PlayStatus {
   min-height: 1.5em;
   margin: 4px 0 0;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--ink-soft);
 }
 

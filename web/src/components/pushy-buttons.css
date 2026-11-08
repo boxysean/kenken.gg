@@ -1,39 +1,47 @@
-/* Copied from react-pushy-buttons@0.0.3 (css/pushy-buttons.css) with its two fonts.googleapis.com @imports removed: the app uses the system --font-sans stack, so those web fonts were dead downloads. */
+/* Copied from react-pushy-buttons@0.0.3 (css/pushy-buttons.css) with its two fonts.googleapis.com @imports removed: the app uses the system --font-sans stack, so those web fonts were dead downloads.
+   Restyled flat: hard border, hard offset shadow, token colours, and a press that
+   moves the button onto its shadow instead of squashing its padding. */
 .btn {
   display: inline-block;
-  border: none;
-  border-radius: .3em;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 -0.25em 0 rgba(0, 0, 0, 0.25), 0 0.25em 0.25em rgba(0, 0, 0, 0.05);
-  color: #fff;
+  border: 3px solid var(--cage-border);
+  border-radius: 0;
+  box-shadow: var(--shadow-control);
+  color: var(--ink);
   cursor: pointer;
   font-family: var(--font-sans);
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.5;
   letter-spacing: 1px;
   padding: .5em 1.5em .75em;
   position: relative;
   text-decoration: none;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
+  text-shadow: none;
   vertical-align: middle;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none; }
   .btn:active {
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.1), inset 0 0.25em 0.5em rgba(0, 0, 0, 0.05);
-    margin-top: .25em;
-    padding-bottom: .5em; }
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-press); }
   .btn:active, .btn:focus {
     outline: none; }
+  /* ...but keyboard focus still gets the hard ring. */
+  .btn:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px; }
 
 .btn--blue {
-  background-color: #3498db; }
+  color: var(--neutral-ink);
+  background-color: var(--neutral-bg); }
 
 .btn--green {
-  background-color: #1abc9c; }
+  color: var(--success-ink);
+  background-color: var(--success-bg); }
 
 .btn--red {
-  background-color: #e65d4f; }
+  color: var(--failure-ink);
+  background-color: var(--failure-bg); }
 
 .btn--lg {
   font-size: 1.5em; }
