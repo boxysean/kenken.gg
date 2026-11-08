@@ -27,7 +27,7 @@
   line-height: 1.1;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
-  transition: background-color 120ms ease;
+  transition: background-color 80ms ease;
 
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -56,10 +56,12 @@
   background-color: var(--cage-fill);
 }
 
+/* Flat yellow block with dark ink; the inset accent ring keeps it distinct from an
+   unselected cell beyond the fill alone. */
 .Cell.isSelected {
   background-color: var(--accent-soft);  /* .Cell.isSelected outranks .isGreyedOut */
   color: var(--selected-ink);
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow: inset 0 0 0 3px var(--accent);
 }
 
 /* Cage edges. A shared edge is flagged on both neighbours, so the right/bottom
@@ -73,11 +75,11 @@
 }
 
 .borderRight {
-  border-right: 2px solid var(--cage-border) !important;
+  border-right: 3px solid var(--cage-border) !important;
 }
 
 .borderBottom {
-  border-bottom: 2px solid var(--cage-border) !important;
+  border-bottom: 3px solid var(--cage-border) !important;
 }
 
 /* Solved (SolveLifecycle.Success = 3): every cell shows its answer, so render cell
@@ -89,6 +91,12 @@
   font-size: clamp(1rem, calc(var(--cell-size) * 0.5), 2.25rem);
   color: var(--ink);
   animation: CellAnswerIn 240ms ease-out both;
+}
+
+/* A selected cell keeps its dark ink on the yellow fill (the page ink is light in
+   dark mode). */
+.App[data-solve-state="3"] .Cell.isSelected {
+  color: var(--selected-ink);
 }
 
 /* ...and the answer inside it keeps the size/weight .Cell sets above and the page's

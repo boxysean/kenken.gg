@@ -20,7 +20,7 @@
   color: var(--accent);
   cursor: pointer;
   font-variant-numeric: tabular-nums;
-  transition: background-color 120ms ease;
+  transition: background-color 80ms ease;
 
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -37,19 +37,21 @@
 }
 
 .PlayCell.borderRight {
-  border-right: 2px solid var(--cage-border);
+  border-right: 3px solid var(--cage-border);
 }
 
 .PlayCell.borderBottom {
-  border-bottom: 2px solid var(--cage-border);
+  border-bottom: 3px solid var(--cage-border);
 }
 
-/* The board clips to its rounded card, so the ring is drawn inside the cell. */
+/* The board clips to its card, so the ring is drawn inside the cell. The fill is a
+   flat yellow block, so the cell's text switches to the dark selection ink. */
 .PlayCell.isFocused,
 .PlayCell:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: -3px;
-  background-color: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
+  color: var(--selected-ink);
+  background-color: var(--accent-soft);
 }
 
 /* The cage label -- the `9+` in a cage's first cell. A rounded display face; the size
@@ -111,6 +113,17 @@
    previous check shake again instead of sitting still. */
 .PlayBoard[data-check-round="1"] .PlayCell.isWrong {
   animation-name: PlayCellWrongB;
+}
+
+/* On a flat palette fill (focused or wrong) the label and pencils follow the cell's
+   ink, so they stay dark on the bright block in dark mode too. */
+.PlayCell.isFocused .PlayCellLabel,
+.PlayCell:focus-visible .PlayCellLabel,
+.PlayCell.isWrong .PlayCellLabel,
+.PlayCell.isFocused .PlayCellPencils,
+.PlayCell:focus-visible .PlayCellPencils,
+.PlayCell.isWrong .PlayCellPencils {
+  color: inherit;
 }
 
 @keyframes PlayCellWrongA {

@@ -10,10 +10,8 @@
   box-sizing: border-box;
   padding: 20px;
   overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(15, 23, 42); /* Fallback color */
-  background-color: rgba(15, 23, 42, 0.45);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
+  /* A flat scrim, no blur. Dark in both themes, so it is not a theme token. */
+  background-color: rgba(15, 23, 42, 0.55);
 }
 
 .ModalOn {
@@ -29,12 +27,13 @@
   width: 100%;
   max-width: 360px;
   margin: auto;
-  padding: 48px 24px 24px;
+  /* Top padding clears the bordered Close button and its shadow. */
+  padding: 64px 24px 24px;
   background-color: var(--surface);
   color: var(--ink);
-  border: 1px solid var(--hairline);
+  border: 3px solid var(--cage-border);
   border-radius: var(--radius-card);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 24px 48px rgba(15, 23, 42, 0.24);
+  box-shadow: var(--shadow-card);
   font-family: var(--font-sans);
   animation: ModalIn 160ms ease-out both;
 }
@@ -62,15 +61,14 @@
   text-align: center;
   color: var(--ink);
   background-color: var(--surface);
-  border: 2px solid var(--hairline);
+  border: 3px solid var(--cage-border);
   border-radius: var(--radius-control);
   outline: none; /* replaced by the focus ring below */
-  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .ModalInput:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* All five operator buttons stay on one row at every supported width (>= 360px):
@@ -94,40 +92,42 @@
   padding: 0;
   font-family: inherit;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
   text-shadow: none;
   color: var(--ink);
   background-color: var(--surface);
-  border: 2px solid var(--hairline);
+  border: 3px solid var(--cage-border);
   border-radius: var(--radius-control);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-  transition: background-color 120ms ease, border-color 120ms ease;
+  box-shadow: var(--shadow-control);
+  transition: background-color 80ms ease, box-shadow 80ms ease, transform 80ms ease;
 }
 
 .ModalButtons .btn:hover {
-  border-color: var(--accent);
   background-color: var(--cage-fill);
 }
 
 .ModalButtons .btn:active {
   margin: 0;
   padding: 0;
+  color: var(--selected-ink);
   background-color: var(--accent-soft);
-  box-shadow: none;
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-press);
 }
 
 .ModalButtons .btn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
 /* The Close Button */
 .Close {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 8px;
+  right: 10px;
+  box-sizing: border-box;
   width: 44px;
   height: 44px;
   display: flex;
@@ -135,15 +135,17 @@
   justify-content: center;
   padding: 0;
   margin: 0;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--ink-soft);
+  border: 3px solid var(--cage-border);
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: var(--shadow-control);
+  color: var(--ink);
   font-family: inherit;
   font-size: 28px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
+  transition: background-color 80ms ease, box-shadow 80ms ease, transform 80ms ease;
 }
 
 .Close:hover,
@@ -154,8 +156,13 @@
   cursor: pointer;
 }
 
+.Close:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-press);
+}
+
 .Close:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 

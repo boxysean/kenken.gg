@@ -10,19 +10,18 @@
   margin-inline: auto;
   margin-block: 8px 4px;
   background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+  border: 3px solid var(--cage-border);
+  border-radius: 0;
   box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
-/* Rounded outer cage frame, as on the solver board (see Board.css). */
+/* Outer cage frame, as on the solver board (see Board.css). */
 .PlayBoard::after {
   content: "";
   position: absolute;
   inset: 0;
-  border: 2px solid var(--cage-border);
-  border-radius: 11px;
+  border: 3px solid var(--cage-border);
   pointer-events: none;
 }
 
@@ -32,8 +31,8 @@
   height: 100%;
   display: grid;
   grid-auto-rows: minmax(0, 1fr);
-  border-top: 2px solid var(--cage-border);
-  border-left: 2px solid var(--cage-border);
+  border-top: 3px solid var(--cage-border);
+  border-left: 3px solid var(--cage-border);
 }
 
 /* Rows exist for the grid/row/gridcell ARIA structure only; the cells lay
@@ -47,6 +46,8 @@
   border-color: var(--accent);
 }
 
+/* Won: a green outer edge. The success fill, not --success-ink, which is near-black
+   and would vanish against the dark-mode page. */
 .PlayApp[data-play-state="3"] .PlayBoard {
-  border-color: var(--success-ink);
+  border-color: var(--success-bg);
 }
