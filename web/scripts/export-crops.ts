@@ -7,6 +7,8 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generate } from '../src/play/generator/generate';
+import { CANVAS_SIZE, characterCanvas } from '../src/ocr/infer/preprocess';
+import type { Run } from '../src/ocr/infer/preprocess';
 import { binarize } from '../src/ocr/pipeline/binarize';
 import { deriveCages } from '../src/ocr/pipeline/cages';
 import type { ClueCrop } from '../src/ocr/pipeline/cages';
@@ -19,7 +21,8 @@ import type { OcrImage, OcrLabel } from '../src/ocr/types';
 
 const BOARD_SIZES = [4, 5, 6, 7, 8, 9];
 const SEEDS_PER_TAG = 25;
-const IMAGE_SIZE = 16;
+// Shared with the in-browser reader, which builds its canvases the same way.
+const IMAGE_SIZE = CANVAS_SIZE;
 // Columns with fewer ink pixels than this are treated as gaps, so single-pixel
 // speckle does not start a character of its own.
 const MIN_COLUMN_INK = 2;
@@ -61,12 +64,6 @@ interface ManifestCrop {
   readonly col: number;
   readonly index: number;
   readonly split: Split;
-}
-
-// Inclusive column range.
-interface Run {
-  start: number;
-  end: number;
 }
 
 const recipes: Recipe[] = [];
@@ -115,43 +112,6 @@ function fitRuns(found: readonly Run[], count: number): Run[] | null {
     runs.splice(widest, 1, { start, end: middle }, { start: middle + 1, end });
   }
   return runs.length === count ? runs : null;
-}
-
-// Fits the ink inside one run's columns into a 16x16 canvas, ink 255 on 0,
-// nearest-neighbour from the binarised mask. Null when the run holds no ink.
-function characterCanvas(ink: Uint8Array, width: number, height: number, run: Run): Uint8Array | null {
-  let minX = width;
-  let maxX = -1;
-  let minY = height;
-  let maxY = -1;
-  for (let y = 0; y < height; y++) {
-    for (let x = run.start; x <= run.end; x++) {
-      if (ink[y * width + x] === 0) continue;
-      minX = Math.min(minX, x);
-      maxX = Math.max(maxX, x);
-      minY = Math.min(minY, y);
-      maxY = Math.max(maxY, y);
-    }
-  }
-  if (maxX < 0) return null;
-
-  const boxWidth = maxX - minX + 1;
-  const boxHeight = maxY - minY + 1;
-  const longest = Math.max(boxWidth, boxHeight);
-  const scaledWidth = Math.max(1, Math.floor((boxWidth * IMAGE_SIZE) / longest));
-  const scaledHeight = Math.max(1, Math.floor((boxHeight * IMAGE_SIZE) / longest));
-  const left = Math.floor((IMAGE_SIZE - scaledWidth) / 2);
-  const top = Math.floor((IMAGE_SIZE - scaledHeight) / 2);
-
-  const canvas = new Uint8Array(IMAGE_SIZE * IMAGE_SIZE);
-  for (let dy = 0; dy < scaledHeight; dy++) {
-    const sy = minY + Math.floor((dy * boxHeight) / scaledHeight);
-    for (let dx = 0; dx < scaledWidth; dx++) {
-      const sx = minX + Math.floor((dx * boxWidth) / scaledWidth);
-      if (ink[sy * width + sx] === 1) canvas[(top + dy) * IMAGE_SIZE + left + dx] = 255;
-    }
-  }
-  return canvas;
 }
 
 // Splits one clue crop into one canvas per drawn character, or null to drop it.
