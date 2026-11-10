@@ -1,0 +1,79 @@
+{
+  "boardSize": 5,
+  "cageLetters": [
+    "a a b b c",
+    "d e e f c",
+    "d g g f h",
+    "i j j f h",
+    "i k k k h"
+  ],
+  "clues": {
+    "a": {
+      "target": 3,
+      "operator": "-"
+    },
+    "b": {
+      "target": 3,
+      "operator": "-"
+    },
+    "c": {
+      "target": 1,
+      "operator": "-"
+    },
+    "d": {
+      "target": 3,
+      "operator": "-"
+    },
+    "e": {
+      "target": 1,
+      "operator": "-"
+    },
+    "f": {
+      "target": 8,
+      "operator": "x"
+    },
+    "g": {
+      "target": 2,
+      "operator": "-"
+    },
+    "h": {
+      "target": 20,
+      "operator": "x"
+    },
+    "i": {
+      "target": 3,
+      "operator": "/"
+    },
+    "j": {
+      "target": 4,
+      "operator": "/"
+    },
+    "k": {
+      "target": 30,
+      "operator": "x"
+    }
+  },
+  "corners": {
+    "tl": {
+      "x": 24,
+      "y": 24
+    },
+    "tr": {
+      "x": 504,
+      "y": 24
+    },
+    "br": {
+      "x": 504,
+      "y": 504
+    },
+    "bl": {
+      "x": 24,
+      "y": 504
+    }
+  },
+  "source": {
+    "kind": "synthetic",
+    "seed": "synth-export-5x5",
+    "styleTag": "glare"
+  }
+}

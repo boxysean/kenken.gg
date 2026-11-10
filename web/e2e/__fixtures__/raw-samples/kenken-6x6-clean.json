@@ -1,0 +1,96 @@
+{
+  "boardSize": 6,
+  "cageLetters": [
+    "a b c c d d",
+    "a b e e d f",
+    "g g h i i f",
+    "j j h k k f",
+    "l j m m n n",
+    "l j m m o o"
+  ],
+  "clues": {
+    "a": {
+      "target": 3,
+      "operator": "-"
+    },
+    "b": {
+      "target": 1,
+      "operator": "-"
+    },
+    "c": {
+      "target": 4,
+      "operator": "/"
+    },
+    "d": {
+      "target": 120,
+      "operator": "x"
+    },
+    "e": {
+      "target": 3,
+      "operator": "/"
+    },
+    "f": {
+      "target": 12,
+      "operator": "x"
+    },
+    "g": {
+      "target": 3,
+      "operator": "/"
+    },
+    "h": {
+      "target": 1,
+      "operator": "-"
+    },
+    "i": {
+      "target": 1,
+      "operator": "-"
+    },
+    "j": {
+      "target": 480,
+      "operator": "x"
+    },
+    "k": {
+      "target": 1,
+      "operator": "-"
+    },
+    "l": {
+      "target": 5,
+      "operator": "-"
+    },
+    "m": {
+      "target": 180,
+      "operator": "x"
+    },
+    "n": {
+      "target": 1,
+      "operator": "-"
+    },
+    "o": {
+      "target": 4,
+      "operator": "/"
+    }
+  },
+  "corners": {
+    "tl": {
+      "x": 24,
+      "y": 24
+    },
+    "tr": {
+      "x": 600,
+      "y": 24
+    },
+    "br": {
+      "x": 600,
+      "y": 600
+    },
+    "bl": {
+      "x": 24,
+      "y": 600
+    }
+  },
+  "source": {
+    "kind": "synthetic",
+    "seed": "synth-export-6x6",
+    "styleTag": "clean"
+  }
+}
