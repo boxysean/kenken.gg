@@ -26,16 +26,27 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from train_char import CLASSES, IMAGE_SIZE, REPO_ROOT, CharNet, load_crop, load_manifest  # noqa: E402
 
 MAX_DIFFERENCE = 1e-4
+# The style tags of web/scripts/export-crops.ts, in its order.
+STYLE_TAGS = ['clean', 'noise', 'glare', 'perspective']
 
 
 def golden_crops(val_crops: list[dict], count: int) -> list[dict]:
-    """Up to count val crops: round-robin over CLASSES in order, then any left, sorted by file."""
-    queues = {name: sorted((crop for crop in val_crops if crop['class'] == name), key=lambda crop: crop['file']) for name in CLASSES}
+    """Up to count val crops: round-robin over (styleTag, class) pairs, then any left, sorted by file.
+
+    One pass visits every class in CLASSES order, and each pass shifts which tag a class
+    draws from, so any prefix of the picks is spread evenly over both tags and classes.
+    An empty (tag, class) bucket is skipped.
+    """
+    pairs = [(STYLE_TAGS[(index + shift) % len(STYLE_TAGS)], name) for shift in range(len(STYLE_TAGS)) for index, name in enumerate(CLASSES)]
+    queues = {
+        pair: sorted((crop for crop in val_crops if (crop['styleTag'], crop['class']) == pair), key=lambda crop: crop['file'])
+        for pair in pairs
+    }
     chosen: list[dict] = []
     while len(chosen) < count and any(queues.values()):
-        for name in CLASSES:
-            if len(chosen) < count and queues[name]:
-                chosen.append(queues[name].pop(0))
+        for pair in pairs:
+            if len(chosen) < count and queues[pair]:
+                chosen.append(queues[pair].pop(0))
     taken = {crop['file'] for crop in chosen}
     rest = sorted((crop for crop in val_crops if crop['file'] not in taken), key=lambda crop: crop['file'])
     return chosen + rest[: count - len(chosen)]

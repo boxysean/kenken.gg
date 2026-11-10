@@ -23,10 +23,17 @@ commands below.
 Python 3.12, CPU only. From the repo root:
 
 ```
-python3.12 -m venv training/.venv
+uv venv --seed training/.venv --python 3.12
 training/.venv/bin/pip install --index-url https://download.pytorch.org/whl/cpu torch==2.15.0
 training/.venv/bin/pip install -r training/requirements.txt
 ```
+
+The venv is made with uv because the machine this was built on has no `ensurepip`, so
+`python3.12 -m venv` there makes a venv with no pip. `--seed` matters too: a plain
+`uv venv` also leaves out pip, so `training/.venv/bin/pip` would not exist. Without uv,
+`python3.12 -m venv training/.venv` works on a Python that does have `ensurepip`; or keep
+a pip-less venv and install into it with
+`uv pip install --python training/.venv/bin/python` in place of `training/.venv/bin/pip install`.
 
 The first install pulls the CPU-only torch build, which is much smaller than the default
 one. A plain `pip install -r training/requirements.txt` also works; it just pulls the
@@ -75,7 +82,7 @@ Measured on this tree, seed 0, 30 epochs.
 | Final validation accuracy | `FINAL val accuracy: 98.60% (983/997)` |
 | Validation accuracy by style | clean 249/249, glare 253/253, perspective 253/253, noise 228/242 (94.2%) |
 | Crops | 4379: 3382 train, 997 val (20 of the 100 puzzles are val) |
-| Golden set argmax accuracy | 50/50 (44 clean, 6 glare crops) |
+| Golden set argmax accuracy | 50/50: clean 12/12, noise 13/13, glare 13/13, perspective 12/12 (lowest top probability 0.609, on a noise crop) |
 | torch vs ONNX, max abs difference | 5.662e-07 over the 997 val crops |
 | `char.onnx` | 361780 bytes, 89806 parameters |
 | Template reader, per character, distorted eval split | 401/445 = 90.1% (noise 106/150 = 70.7%, glare 149/149, perspective 146/146) |
@@ -119,8 +126,12 @@ int8 quantisation and models for corners or cage edges are deliberately out of s
   98.60% is an upper bound on what to expect elsewhere.
 - Some classes are rare: `+` has 14 crops (3 in val), `9` has 56 and `7` has 84, while
   `x` has 864. `0` is not rare here (331), since it only ever appears inside a number.
-- The golden set is class-balanced but, because it takes val crops in file order, it is
-  mostly clean crops; it pins parity with the browser, not accuracy.
+- The golden set is picked round-robin over (style tag, class) pairs, so it spans all
+  four tags (12 clean, 13 noise, 13 glare, 12 perspective) and 3 or 4 crops of every
+  class but `+`, which has only 3 val crops and gets 2. Within a pair it takes crops in
+  file order, not by difficulty. All 50 happen to be read correctly, although noise
+  validation accuracy is 94.2%, so a retrained model may well miss one. The set pins
+  parity with the browser; it does not measure accuracy.
 - `CharNet` has 89806 parameters, a little over the ~80k the spec aimed for; that is the
   spec's own layer sizes (the 1024-to-64 linear layer is 65600 of them).
 - `web/scripts/` is outside `npm run typecheck`, so the crop exporter and the baseline
