@@ -13,7 +13,7 @@ import SolveLifecycle from './SolveLifecycle';
 import Tooltip from './components/Tooltip';
 import { solveInWorker } from './solver/workerClient';
 import PlayApp from './play/PlayApp';
-import ScanButton from './ocr/ScanButton';
+import ScanPanel from './ocr/ScanPanel';
 import { loadPrefs, savePrefs } from './play/persistence';
 
 import update from 'immutability-helper';
@@ -211,6 +211,73 @@ class App extends React.Component {
     return this.isBoardFull() && [SolveLifecycle.Failure, SolveLifecycle.Inputting].indexOf(this.state.solveLifecycle) >= 0;
   }
 
+  // Replaces the editor's board with a scanned one (a BoardConversion: the same
+  // strings submit() builds). The board is back in the Inputting state so any
+  // misread cage or clue can be corrected by hand before solving.
+  loadBoard(conversion) {
+    const boardSize = conversion.boardSize;
+
+    const constraintCharToFormula = {};
+    conversion.constraintString.split(" ").filter((token) => token !== "").forEach((token) => {
+      const match = /^([^=]*)=([0-9]+)([+\-x/]?)$/.exec(token);
+      if (match) {
+        constraintCharToFormula[match[1]] = match[2] + match[3];
+      }
+    });
+
+    const cellToConstraint = {};
+    conversion.boardStrings.forEach((row, rowIndex) => {
+      row.split(" ").forEach((letter, column) => {
+        // A cage whose clue was not read gets an empty formula: it still draws
+        // its borders, and the user fills the clue in.
+        cellToConstraint[rowIndex * boardSize + column] = {
+          name: letter,
+          formula: constraintCharToFormula[letter] || "",
+        };
+      });
+    });
+
+    this.setState({
+      boardSize: boardSize,
+      cellToConstraint: cellToConstraint,
+      constraintCharToFormula: constraintCharToFormula,
+      answers: [],
+      solveLifecycle: SolveLifecycle.Inputting,
+      showTooltip: false,
+      selected: new Set(),
+      selecting: false,
+      modal: false,
+    });
+  }
+
+  // The editor's board as a ScannedBoard, for exporting the user's corrections
+  // as a label; null while the board is empty. Unset cells become empty tokens,
+  // which validateLabel reports, so a half-drawn board can't be exported.
+  currentBoard() {
+    const boardSize = this.state.boardSize;
+    const cellToConstraint = this.state.cellToConstraint;
+    if (Object.keys(cellToConstraint).length === 0) {
+      return null;
+    }
+
+    const cageLetters = _.range(boardSize).map((rowIndex) =>
+      _.range(boardSize).map((column) => {
+        const constraint = cellToConstraint[rowIndex * boardSize + column];
+        return constraint ? constraint.name : "";
+      }).join(" ")
+    );
+
+    const clues = {};
+    Object.values(cellToConstraint).forEach((constraint) => {
+      const match = /^([0-9]+)([+\-x/]?)$/.exec(constraint.formula);
+      if (match && !(constraint.name in clues)) {
+        clues[constraint.name] = { target: parseInt(match[1], 10), operator: match[2] };
+      }
+    });
+
+    return { boardSize: boardSize, cageLetters: cageLetters, clues: clues };
+  }
+
   renderSolver() {
     return (
       <>
@@ -259,7 +326,7 @@ class App extends React.Component {
           ></ClearButton>
         }
 
-        <ScanButton />
+        <ScanPanel onLoadBoard={this.loadBoard.bind(this)} board={this.currentBoard()} />
 
         {this.state.debugOverlay &&
           <ul>
