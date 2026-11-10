@@ -13,6 +13,7 @@ import SolveLifecycle from './SolveLifecycle';
 import Tooltip from './components/Tooltip';
 import { solveInWorker } from './solver/workerClient';
 import PlayApp from './play/PlayApp';
+import ScanButton from './ocr/ScanButton';
 import { loadPrefs, savePrefs } from './play/persistence';
 
 import update from 'immutability-helper';
@@ -257,6 +258,8 @@ class App extends React.Component {
             onSubmit={this.reset.bind(this)}
           ></ClearButton>
         }
+
+        <ScanButton />
 
         {this.state.debugOverlay &&
           <ul>
