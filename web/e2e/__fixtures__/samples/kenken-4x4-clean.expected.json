@@ -1,0 +1,39 @@
+{
+  "boardSize": 4,
+  "cageLetters": [
+    "a b b c",
+    "a d d c",
+    "e e f c",
+    "g g f f"
+  ],
+  "clues": {
+    "a": {
+      "target": 2,
+      "operator": "-"
+    },
+    "b": {
+      "target": 2,
+      "operator": "/"
+    },
+    "c": {
+      "target": 6,
+      "operator": "x"
+    },
+    "d": {
+      "target": 3,
+      "operator": "-"
+    },
+    "e": {
+      "target": 2,
+      "operator": "-"
+    },
+    "f": {
+      "target": 12,
+      "operator": "x"
+    },
+    "g": {
+      "target": 1,
+      "operator": "-"
+    }
+  }
+}

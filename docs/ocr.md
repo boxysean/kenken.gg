@@ -79,3 +79,90 @@ left blank rather than guessed.
 - The clue reader is template matching against the synthetic renderer's own font, so it is
   only expected to work on the synthetic fixtures. Real newspaper photos will mostly come
   back as "cages needing review" until the learned reader lands (ticket 10).
+
+# Accuracy eval and the sample suite (OCR ticket 8)
+
+Two automated checks guard the pipeline, both on top of the manual recipe above.
+
+## The accuracy eval
+
+```sh
+cd web
+npm test                                  # the whole vitest suite, eval included
+npx vitest run src/ocr/eval/eval.test.ts  # the eval on its own (a few seconds)
+```
+
+[`web/src/ocr/eval/manifest.json`](../web/src/ocr/eval/manifest.json) lists 24 synthetic
+recipes (`seed`, `boardSize`, `styleTag`), six per style tag. Each is rendered with
+`generate` → `renderPuzzle` → `distort` (the same distortion per tag as
+`scripts/export-synth.ts`), scanned with `scanPhoto` and the template reader, and scored
+against its label:
+
+- **cornerAccuracy** — share of images whose four detected corners are all within
+  `tolerance.cornerPx` (2 px) of the true ones. The mean corner error is reported too.
+- **edgeAccuracy** — internal edges classified correctly as thick (different cages) or thin
+  (same cage), over all internal edges. A failed scan scores 0 for its edges.
+- **clueAccuracy** — of the clues the scan *committed* to, the share whose target and
+  operator are right. A clue only counts as right when its cage has exactly the cells of a
+  real cage. Declined clues are not counted here; they show up as **coverage**
+  (committed / total cages). With nothing committed at all the accuracy is `null`, scored as
+  1.0 against the floor: no reading was wrong.
+- **wholePuzzle** — share of images with no errors, the right partition, every clue read and
+  right, and a board the solver solves.
+
+The test prints one row per style tag, for example:
+
+```
+styleTag     fixtures  corner  edge    clue    coverage  whole   passes
+-----------  --------  ------  ------  ------  --------  ------  ------
+clean        6         100.0%  100.0%  100.0%  100.0%    100.0%  6/6
+noise        6         100.0%  100.0%  100.0%  75.4%     16.7%   1/6
+glare        6         100.0%  100.0%  100.0%  100.0%    100.0%  6/6
+perspective  6         100.0%  100.0%  100.0%  100.0%    100.0%  6/6
+```
+
+and writes the full per-image report to `web/src/ocr/eval/last-report.json`. That file is
+gitignored: it is for reading, not for committing.
+
+The `floors` in the manifest are the **regression baseline**: the test fails if any metric for
+any style tag drops below its floor. They were set from the first run, a little below what was
+measured (0.90 where 1.00 was measured; 0.15 for noise's whole-puzzle 1/6, where the reader
+declines about a quarter of the noisy clues). When the pipeline gets better, raise the floors
+in the same change so the gain is locked in. Never lower one to make a change pass.
+
+## The Playwright sample suite
+
+```sh
+cd web
+npx playwright install chromium   # once per machine
+npm run test:e2e
+```
+
+This builds the app (`vite build`), serves it with `vite preview` on port 4173 and, for every
+PNG under [`web/e2e/__fixtures__/samples/`](../web/e2e/__fixtures__/samples/), drives the real
+UI in Chromium: pick the image with **Scan a photo**, wait for the summary, check there are no
+errors, **Load into editor**, then compare every editor cell (its clue text and its four cage
+borders) with `<name>.expected.json`, a `ScannedBoard` (`boardSize`, `cageLetters`, `clues`).
+
+The five committed samples are written by `npm run samples:export`
+([`web/scripts/export-samples.ts`](../web/scripts/export-samples.ts)); rerunning it rewrites
+identical files.
+
+## A failing image becomes a sample
+
+Any image that fails — an eval recipe, a manual test, or a user report — becomes a committed
+sample plus its expected board, so a fix cannot silently regress it:
+
+1. Add `<name>.png` and `<name>.expected.json` (the correct `ScannedBoard`, checked by hand or
+   taken from the synthetic label minus `corners` and `source`) under
+   `web/e2e/__fixtures__/samples/`. For a synthetic image, add it to
+   `scripts/export-samples.ts` and run `npm run samples:export` rather than writing files by
+   hand.
+2. If the image is synthetic, also add its recipe to `web/src/ocr/eval/manifest.json`.
+3. Fix the pipeline, then run `npm test` (the eval, against the committed floors) and
+   `npm run test:e2e` (every sample, through the UI). Both must pass.
+4. If the fix raised a metric, raise its floor in the manifest too.
+
+The sample suite only holds images that scan fully. One that is still expected to leave a clue
+unread (like `raw-samples/kenken-6x6-perspective`) belongs in the eval, where coverage is
+measured, until the fix that makes it pass lands with it.

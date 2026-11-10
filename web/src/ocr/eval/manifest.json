@@ -1,0 +1,153 @@
+{
+  "recipes": [
+    {
+      "seed": "eval-clean-1",
+      "boardSize": 4,
+      "styleTag": "clean"
+    },
+    {
+      "seed": "eval-clean-2",
+      "boardSize": 5,
+      "styleTag": "clean"
+    },
+    {
+      "seed": "eval-clean-3",
+      "boardSize": 6,
+      "styleTag": "clean"
+    },
+    {
+      "seed": "eval-clean-4",
+      "boardSize": 4,
+      "styleTag": "clean"
+    },
+    {
+      "seed": "eval-clean-5",
+      "boardSize": 5,
+      "styleTag": "clean"
+    },
+    {
+      "seed": "eval-clean-6",
+      "boardSize": 6,
+      "styleTag": "clean"
+    },
+    {
+      "seed": "eval-noise-1",
+      "boardSize": 4,
+      "styleTag": "noise"
+    },
+    {
+      "seed": "eval-noise-2",
+      "boardSize": 5,
+      "styleTag": "noise"
+    },
+    {
+      "seed": "eval-noise-3",
+      "boardSize": 6,
+      "styleTag": "noise"
+    },
+    {
+      "seed": "eval-noise-4",
+      "boardSize": 4,
+      "styleTag": "noise"
+    },
+    {
+      "seed": "eval-noise-5",
+      "boardSize": 5,
+      "styleTag": "noise"
+    },
+    {
+      "seed": "eval-noise-6",
+      "boardSize": 6,
+      "styleTag": "noise"
+    },
+    {
+      "seed": "eval-glare-1",
+      "boardSize": 4,
+      "styleTag": "glare"
+    },
+    {
+      "seed": "eval-glare-2",
+      "boardSize": 5,
+      "styleTag": "glare"
+    },
+    {
+      "seed": "eval-glare-3",
+      "boardSize": 6,
+      "styleTag": "glare"
+    },
+    {
+      "seed": "eval-glare-4",
+      "boardSize": 4,
+      "styleTag": "glare"
+    },
+    {
+      "seed": "eval-glare-5",
+      "boardSize": 5,
+      "styleTag": "glare"
+    },
+    {
+      "seed": "eval-glare-6",
+      "boardSize": 6,
+      "styleTag": "glare"
+    },
+    {
+      "seed": "eval-perspective-1",
+      "boardSize": 4,
+      "styleTag": "perspective"
+    },
+    {
+      "seed": "eval-perspective-2",
+      "boardSize": 5,
+      "styleTag": "perspective"
+    },
+    {
+      "seed": "eval-perspective-3",
+      "boardSize": 6,
+      "styleTag": "perspective"
+    },
+    {
+      "seed": "eval-perspective-4",
+      "boardSize": 4,
+      "styleTag": "perspective"
+    },
+    {
+      "seed": "eval-perspective-5",
+      "boardSize": 5,
+      "styleTag": "perspective"
+    },
+    {
+      "seed": "eval-perspective-6",
+      "boardSize": 6,
+      "styleTag": "perspective"
+    }
+  ],
+  "tolerance": {
+    "cornerPx": 2
+  },
+  "floors": {
+    "clean": {
+      "cornerAccuracy": 0.9,
+      "edgeAccuracy": 0.9,
+      "clueAccuracy": 0.9,
+      "wholePuzzle": 0.9
+    },
+    "noise": {
+      "cornerAccuracy": 0.9,
+      "edgeAccuracy": 0.9,
+      "clueAccuracy": 0.9,
+      "wholePuzzle": 0.15
+    },
+    "glare": {
+      "cornerAccuracy": 0.9,
+      "edgeAccuracy": 0.9,
+      "clueAccuracy": 0.9,
+      "wholePuzzle": 0.9
+    },
+    "perspective": {
+      "cornerAccuracy": 0.9,
+      "edgeAccuracy": 0.9,
+      "clueAccuracy": 0.9,
+      "wholePuzzle": 0.9
+    }
+  }
+}
