@@ -15,13 +15,14 @@ import { scanPhoto } from './pipeline/run';
 import type { ScanResult } from './pipeline/run';
 import type { ClueReader } from './pipeline/clueReader';
 import { templateClueReader } from './pipeline/clueTemplate';
+import { isPreparedClueReader, makeOnnxReader } from './infer/onnxReader';
 import './ScanPanel.css';
 
 export interface ScanPanelProps {
   onLoadBoard: (conversion: BoardConversion) => void;
   board?: ScannedBoard | null; // the CURRENT editor board, for the download
   scan?: typeof scanPhoto;
-  reader?: ClueReader;
+  reader?: ClueReader; // overrides the default, the ONNX reader (or its template fallback)
   store?: ScanStore;
 }
 
@@ -46,18 +47,41 @@ function cageCount(board: ScannedBoard): number {
   return new Set(board.cageLetters.join(' ').split(' ').filter((letter) => letter !== '')).size;
 }
 
+// Shown as data-reader, so a silent fallback from the model is visible (e2e checks it).
+function readerName(reader: ClueReader): string {
+  if (isPreparedClueReader(reader)) return reader.name;
+  return reader === templateClueReader ? 'template' : 'custom';
+}
+
 const ScanPanel: React.FC<ScanPanelProps> = ({
   onLoadBoard,
   board = null,
   scan = scanPhoto,
-  reader = templateClueReader,
+  reader,
   store = ingestStore,
 }) => {
   // Only the latest image's scan may land: an earlier, slower one is dropped.
   const requestRef = useRef(0);
+  // The reader in use, once loaded; scans wait for it.
+  const readerRef = useRef<Promise<ClueReader>>(Promise.resolve(templateClueReader));
+  const [activeReader, setActiveReader] = useState<string | undefined>(undefined);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [exportErrors, setExportErrors] = useState<string[]>([]);
+
+  // Declared before the store subscription so readerRef is set when it first fires.
+  useEffect(() => {
+    let mounted = true;
+    // makeOnnxReader never rejects: it falls back to the template reader.
+    const loading = reader ? Promise.resolve(reader) : makeOnnxReader();
+    readerRef.current = loading;
+    loading.then((loaded) => {
+      if (mounted) setActiveReader(readerName(loaded));
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [reader]);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -76,18 +100,34 @@ const ScanPanel: React.FC<ScanPanelProps> = ({
       // so it is deferred a tick to let "Scanning…" paint before the page blocks.
       timer = setTimeout(() => {
         timer = undefined;
-        let scanned: ScanResult;
-        try {
-          scanned = scan(image, reader);
-        } catch (error) {
-          // scanPhoto never throws, but an injected scan might.
-          scanned = { lowConfidenceCages: [], errors: [`scan: ${error instanceof Error ? error.message : String(error)}`] };
-        }
-        if (request !== requestRef.current) {
-          return;
-        }
-        setBusy(false);
-        setResult(scanned);
+        readerRef.current.then(async (active) => {
+          if (request !== requestRef.current) {
+            return;
+          }
+          if (isPreparedClueReader(active)) {
+            try {
+              await active.prepare(image, scan);
+            } catch (error) {
+              // Unclassified characters read as null, so those cages need review.
+              console.warn('clue reader: prepare failed', error);
+            }
+            if (request !== requestRef.current) {
+              return;
+            }
+          }
+          let scanned: ScanResult;
+          try {
+            scanned = scan(image, active);
+          } catch (error) {
+            // scanPhoto never throws, but an injected scan might.
+            scanned = { lowConfidenceCages: [], errors: [`scan: ${error instanceof Error ? error.message : String(error)}`] };
+          }
+          if (request !== requestRef.current) {
+            return;
+          }
+          setBusy(false);
+          setResult(scanned);
+        });
       }, 0);
     });
     return () => {
@@ -116,7 +156,7 @@ const ScanPanel: React.FC<ScanPanelProps> = ({
   const shownErrors = failed ? result!.errors : exportErrors;
 
   return (
-    <div className="ScanPanel">
+    <div className="ScanPanel" data-reader={activeReader}>
       <ScanButton store={store} />
 
       {busy &&

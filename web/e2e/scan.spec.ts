@@ -63,6 +63,9 @@ for (const name of names) {
     const solverToggle = page.getByTestId('mode-toggle-solver');
     if ((await solverToggle.getAttribute('aria-pressed')) !== 'true') await solverToggle.click();
 
+    // The model really loaded: a silent fallback to the template reader fails here.
+    await expect(page.locator('.ScanPanel')).toHaveAttribute('data-reader', 'onnx', { timeout: 30_000 });
+
     await page.setInputFiles('[data-testid="scan-input"]', `${SAMPLES}${name}.png`);
     await expect(page.getByTestId('scan-summary')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('scan-errors')).toHaveCount(0);
