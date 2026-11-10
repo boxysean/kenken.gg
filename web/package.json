@@ -23,7 +23,9 @@
     "typecheck": "tsc --noEmit",
     "synth:export": "tsx scripts/export-synth.ts",
     "test:e2e": "playwright test",
-    "samples:export": "tsx scripts/export-samples.ts"
+    "samples:export": "tsx scripts/export-samples.ts",
+    "ocr:export-crops": "tsx scripts/export-crops.ts",
+    "ocr:baseline": "tsx scripts/ocr-baseline.ts"
   },
   "browserslist": {
     "production": [

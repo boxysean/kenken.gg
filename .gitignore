@@ -1,2 +1,7 @@
 /.netlify/
 web/src/ocr/eval/last-report.json
+training/data/
+training/checkpoints/
+training/.venv/
+__pycache__/
+*.pt
