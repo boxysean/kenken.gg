@@ -1,0 +1,6 @@
+# CPU-only torch: install it first from the CPU index, see training/README.md.
+torch==2.15.0
+onnx==1.23.2
+onnxruntime==1.31.1
+numpy==2.5.4
+pillow==13.0.0
