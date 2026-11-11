@@ -3,7 +3,7 @@
    moves the button onto its shadow instead of squashing its padding. */
 .btn {
   display: inline-block;
-  border: 3px solid var(--cage-border);
+  border: var(--border-width) solid var(--cage-border);
   border-radius: 0;
   box-shadow: var(--shadow-control);
   color: var(--ink);

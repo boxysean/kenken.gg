@@ -15,7 +15,7 @@
   margin: 8px 0 0;
   padding: 6px 18px 6px 16px;
   background-color: var(--surface);
-  border: 3px solid var(--cage-border);
+  border: var(--border-width) solid var(--cage-border);
   border-radius: 0;
   box-shadow: var(--shadow-control);
   color: var(--ink-soft);
@@ -57,7 +57,7 @@
   width: 28px;
   height: 28px;
   margin-top: -11px; /* (6px track - 28px thumb) / 2 */
-  border: 3px solid var(--cage-border);
+  border: var(--border-width) solid var(--cage-border);
   border-radius: 0;
   background: var(--accent);
   box-shadow: var(--shadow-press);
@@ -85,7 +85,7 @@
   box-sizing: border-box;
   width: 28px;
   height: 28px;
-  border: 3px solid var(--cage-border);
+  border: var(--border-width) solid var(--cage-border);
   border-radius: 0;
   background: var(--accent);
   box-shadow: var(--shadow-press);

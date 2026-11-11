@@ -15,6 +15,7 @@ import { solveInWorker } from './solver/workerClient';
 import PlayApp from './play/PlayApp';
 import ScanButton from './ocr/ScanButton';
 import { loadPrefs, savePrefs } from './play/persistence';
+import { loadStoredTheme, resolveTheme, saveTheme } from './theme';
 
 import update from 'immutability-helper';
 
@@ -48,12 +49,15 @@ class App extends React.Component {
       showTooltip: true,
       debugOverlay: window.location.href.includes("debug=true"),
       mode: loadPrefs().mode,
+      // Not in DEFAULT_STATE, so reset() leaves the theme alone.
+      theme: resolveTheme(window.location.search, loadStoredTheme()),
       ...this.DEFAULT_STATE,
     };
   }
 
   componentDidMount() {
     document.addEventListener("keydown", this.escFunction.bind(this), false);
+    saveTheme(this.state.theme);
   }
 
   reset() {
@@ -279,6 +283,7 @@ class App extends React.Component {
     return (
       <div
         className="App"
+        data-theme={this.state.theme}
         data-solve-state={this.state.solveLifecycle}
         onMouseUp={(event) => this.processRelease(event)}
         onTouchMove={(event) => this.processTouchMove(event)}
