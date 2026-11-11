@@ -23,6 +23,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "synth:export": "tsx scripts/export-synth.ts",
+    "check:labels": "tsx scripts/check-labels.ts",
     "test:e2e": "playwright test",
     "samples:export": "tsx scripts/export-samples.ts",
     "ocr:export-crops": "tsx scripts/export-crops.ts",

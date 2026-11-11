@@ -166,3 +166,44 @@ sample plus its expected board, so a fix cannot silently regress it:
 The sample suite only holds images that scan fully. One that is still expected to leave a clue
 unread (like `raw-samples/kenken-6x6-perspective`) belongs in the eval, where coverage is
 measured, until the fix that makes it pass lands with it.
+
+# Label a photo by hand, and the label check
+
+## Labelling a photo the scanner cannot read
+
+Corner detection fails on most real photos, so a label can be made by hand instead. In the
+**Solver** view, under **Scan a photo**:
+
+1. Click **Label a photo** and choose the image. The prompt above it names the next corner.
+2. Click the board's four corners in order: top-left, top-right, bottom-right, bottom-left.
+   Numbered markers 1–4 appear and the prompt reads "All four corners marked"; further clicks
+   are ignored. **Undo** removes the last corner.
+3. Pick the **Board size** (4×4 to 9×9) and click **Open in editor**. The editor loads an empty
+   board of that size; the corners stay marked on the photo.
+4. Draw every cage and type its clue as usual.
+5. Optionally type a **Style tag** (e.g. `newspaper`), then click **Export label JSON**. The
+   browser saves `kenken-label.json` with `"source": { "kind": "photo", "styleTag": … }`.
+
+The corners are exported in the **photo's own pixels**, not the scaled pixels it is displayed
+at. As with the scan export, the label goes through `validateLabel` first: if it is invalid
+(an unset cell, a cage with no clue) the problems are listed in red and nothing is downloaded.
+`web/e2e/label.spec.ts` drives this whole path in Chromium (`npm run test:e2e`).
+
+## Checking label files
+
+```sh
+cd web
+npm run check:labels                         # e2e/__fixtures__/raw-samples
+npm run check:labels -- path/to/new-labels   # any folder of label .json files
+```
+
+It prints one line per `.json` file, for example `kenken-4x4-clean.json: ok`:
+
+- **ok** — a valid label whose puzzle has exactly one solution.
+- **invalid: …** — not JSON, the wrong shape, or `validateLabel` problems, listed after the colon.
+- **no solution** — the cages and clues contradict each other.
+- **not unique (N solutions)** — more than one solution (counting stops at 3).
+
+The exit code is non-zero if any file is not ok. Uniqueness is the check that matters for hand
+labels: a misdrawn cage or a misread clue still makes a perfectly valid label, but a real
+KenKen has exactly one solution, and a wrong cage almost never keeps it that way.

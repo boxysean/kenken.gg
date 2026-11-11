@@ -14,6 +14,7 @@ import Tooltip from './components/Tooltip';
 import { solveInWorker } from './solver/workerClient';
 import PlayApp from './play/PlayApp';
 import ScanPanel from './ocr/ScanPanel';
+import LabelPanel from './ocr/LabelPanel';
 import { loadPrefs, savePrefs } from './play/persistence';
 
 import update from 'immutability-helper';
@@ -250,6 +251,23 @@ class App extends React.Component {
     });
   }
 
+  // An empty board of the given size, in the state loadBoard leaves a scan in,
+  // for hand-labelling a photo: LabelPanel keeps the corners, the user draws
+  // the cages here, and currentBoard() stays null until they do.
+  loadEmptyBoard(size) {
+    this.setState({
+      boardSize: size,
+      cellToConstraint: {},
+      constraintCharToFormula: {},
+      answers: [],
+      solveLifecycle: SolveLifecycle.Inputting,
+      showTooltip: false,
+      selected: new Set(),
+      selecting: false,
+      modal: false,
+    });
+  }
+
   // The editor's board as a ScannedBoard, for exporting the user's corrections
   // as a label; null while the board is empty. Unset cells become empty tokens,
   // which validateLabel reports, so a half-drawn board can't be exported.
@@ -327,6 +345,7 @@ class App extends React.Component {
         }
 
         <ScanPanel onLoadBoard={this.loadBoard.bind(this)} board={this.currentBoard()} />
+        <LabelPanel onOpenBoard={this.loadEmptyBoard.bind(this)} board={this.currentBoard()} />
 
         {this.state.debugOverlay &&
           <ul>
