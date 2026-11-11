@@ -14,6 +14,7 @@ import Tooltip from './components/Tooltip';
 import { solveInWorker } from './solver/workerClient';
 import PlayApp from './play/PlayApp';
 import ScanPanel from './ocr/ScanPanel';
+import { nextCageLetter } from './cageLetters';
 import { loadPrefs, savePrefs } from './play/persistence';
 import { loadStoredTheme, resolveTheme, saveTheme } from './theme';
 
@@ -104,13 +105,14 @@ class App extends React.Component {
   }
 
   processModal(value, operator) {
-    var nextConstraintChar = String.fromCharCode(1 +
-      Object.values(this.state.cellToConstraint)
-        .map((constraint) => constraint.name.charCodeAt(0))
-        .reduce(
-          (accumulator, constraintName) => Math.max(accumulator, constraintName),
-          'a'.charCodeAt(0) - 1
-        )
+    // Only names on cells outside the selection count as used: a cage lying
+    // wholly inside it is about to be overwritten, so its name is free again.
+    // `selected` holds numeric cell indexes; object keys come back as strings.
+    var selected = this.state.selected;
+    var nextConstraintChar = nextCageLetter(
+      Object.entries(this.state.cellToConstraint)
+        .filter(([cell]) => !selected.has(Number(cell)))
+        .map(([, constraint]) => constraint.name)
     );
 
     var formula = value + operator;

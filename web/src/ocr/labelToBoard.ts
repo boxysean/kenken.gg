@@ -1,6 +1,7 @@
 // Converts an OCR label into the solver's own puzzle strings, mirroring the
 // generator's emit stage (finish() in web/src/play/generator/generate.ts), and
 // validates a label before it is converted. See README.md.
+import { CAGE_LETTERS } from '../cageLetters';
 import type { ScannedBoard } from './types';
 
 export interface BoardConversion {
@@ -64,6 +65,8 @@ export function validateLabel(label: ScannedBoard): string[] {
         errors.push(`row ${rowIndex}, column ${column} is empty`);
       } else if (token.length !== 1) {
         errors.push(`row ${rowIndex}, column ${column} is ${JSON.stringify(token)}, which is not a single character`);
+      } else if (!CAGE_LETTERS.includes(token)) {
+        errors.push(`row ${rowIndex}, column ${column} is ${JSON.stringify(token)}, which is not a printable cage letter`);
       }
     });
   });
