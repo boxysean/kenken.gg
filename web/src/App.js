@@ -15,7 +15,9 @@ import { solveInWorker } from './solver/workerClient';
 import PlayApp from './play/PlayApp';
 import ScanPanel from './ocr/ScanPanel';
 import LabelPanel from './ocr/LabelPanel';
+import { nextCageLetter } from './cageLetters';
 import { loadPrefs, savePrefs } from './play/persistence';
+import { loadStoredTheme, resolveTheme, saveTheme } from './theme';
 
 import update from 'immutability-helper';
 
@@ -49,12 +51,15 @@ class App extends React.Component {
       showTooltip: true,
       debugOverlay: window.location.href.includes("debug=true"),
       mode: loadPrefs().mode,
+      // Not in DEFAULT_STATE, so reset() leaves the theme alone.
+      theme: resolveTheme(window.location.search, loadStoredTheme()),
       ...this.DEFAULT_STATE,
     };
   }
 
   componentDidMount() {
     document.addEventListener("keydown", this.escFunction.bind(this), false);
+    saveTheme(this.state.theme);
   }
 
   reset() {
@@ -101,13 +106,14 @@ class App extends React.Component {
   }
 
   processModal(value, operator) {
-    var nextConstraintChar = String.fromCharCode(1 +
-      Object.values(this.state.cellToConstraint)
-        .map((constraint) => constraint.name.charCodeAt(0))
-        .reduce(
-          (accumulator, constraintName) => Math.max(accumulator, constraintName),
-          'a'.charCodeAt(0) - 1
-        )
+    // Only names on cells outside the selection count as used: a cage lying
+    // wholly inside it is about to be overwritten, so its name is free again.
+    // `selected` holds numeric cell indexes; object keys come back as strings.
+    var selected = this.state.selected;
+    var nextConstraintChar = nextCageLetter(
+      Object.entries(this.state.cellToConstraint)
+        .filter(([cell]) => !selected.has(Number(cell)))
+        .map(([, constraint]) => constraint.name)
     );
 
     var formula = value + operator;
@@ -365,6 +371,7 @@ class App extends React.Component {
     return (
       <div
         className="App"
+        data-theme={this.state.theme}
         data-solve-state={this.state.solveLifecycle}
         onMouseUp={(event) => this.processRelease(event)}
         onTouchMove={(event) => this.processTouchMove(event)}

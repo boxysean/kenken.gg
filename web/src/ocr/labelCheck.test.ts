@@ -89,11 +89,15 @@ describe('checkLabel', () => {
     });
   });
 
-  it('turns a solver parse failure into an invalid reason rather than throwing', () => {
-    // "=" passes validateLabel (a single character) but cannot be a constraint name.
+  it('rejects a constraint name that is not a cage letter before the solver sees it', () => {
+    // "=" was the old shape of this bug: it passed the single-character check
+    // and only failed inside the solver, as a parse error. The shared alphabet
+    // now catches it up front with a message that names the cell.
     const verdict = checkLabel(label({ boardSize: 1, cageLetters: ['='], clues: { '=': { target: 1, operator: '' } } }));
     expect(verdict.status).toBe('invalid');
-    expect((verdict as { reasons: string[] }).reasons).toEqual(['solver: Error parsing token ==1']);
+    expect((verdict as { reasons: string[] }).reasons).toEqual([
+      'row 0, column 0 is "=", which is not a printable cage letter',
+    ]);
   });
 });
 

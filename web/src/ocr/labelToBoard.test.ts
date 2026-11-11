@@ -80,4 +80,23 @@ describe('validateLabel', () => {
       'cage "b" is not contiguous: its 3 cells form 2 separate groups',
     ]);
   });
+
+  it('rejects a cage named by a control character', () => {
+    const fourByFour = fixtures.valid.find((fixture) => fixture.name === 'four-by-four-dominoes')!;
+    const label = JSON.parse(JSON.stringify(fourByFour.label)) as OcrLabel;
+    label.cageLetters = label.cageLetters.map((row) =>
+      row
+        .split(' ')
+        .map((token) => (token === 'b' ? '\u007f' : token))
+        .join(' '),
+    );
+    label.clues['\u007f'] = label.clues.b;
+    delete label.clues.b;
+    // JSON.stringify escapes only C0 controls, so DEL appears raw in the
+    // message. Like the other shape checks, every cell of the cage is reported.
+    expect(validateLabel(label)).toEqual([
+      'row 0, column 2 is "\u007f", which is not a printable cage letter',
+      'row 1, column 2 is "\u007f", which is not a printable cage letter',
+    ]);
+  });
 });

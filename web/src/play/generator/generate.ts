@@ -1,6 +1,7 @@
 // Seeded KenKen puzzle generator. The same (seed, boardSize) always produces
 // the same puzzle: all randomness comes from rng.ts, never Math.random or Date,
 // and every bound on the search is a node or attempt count, never wall-clock.
+import { CAGE_LETTERS } from '../../cageLetters';
 import { Constraint, parseBoard, parseConstraintLine } from '../../solver';
 import type { Operator } from '../../solver';
 import type { Cage, DifficultyMetrics, PlayPuzzle } from '../types';
@@ -19,7 +20,6 @@ const MAX_SQUARE_ATTEMPTS = 8;
 // "at least two solutions", so a candidate is only ever accepted on a complete
 // search; the bound just keeps a pathological caging from stalling the page.
 const SEARCH_NODES = 20000;
-const LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 interface DifficultyBand {
   readonly minMeanCageSize: number;
@@ -253,10 +253,10 @@ function cageTarget(operator: Operator, values: readonly number[]): number {
 }
 
 function assignLetters(cages: Cage[]): void {
-  if (cages.length > LETTERS.length) {
-    throw new Error(`generate: ${cages.length} cages do not fit in ${LETTERS.length} single-character names`);
+  if (cages.length > CAGE_LETTERS.length) {
+    throw new Error(`generate: ${cages.length} cages do not fit in ${CAGE_LETTERS.length} single-character names`);
   }
-  cages.forEach((cage, index) => (cage.letter = LETTERS[index]));
+  cages.forEach((cage, index) => (cage.letter = CAGE_LETTERS[index]));
 }
 
 function letterGrid(cages: readonly Cage[], boardSize: number): string[][] {
