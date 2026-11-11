@@ -9,8 +9,8 @@
   /* Each cell draws only its right and bottom edge, so shared edges never double up;
      .Board draws the outer top/left frame. */
   border: 0 solid var(--grid-line);
-  border-right-width: 1px;
-  border-bottom-width: 1px;
+  border-right-width: var(--grid-line-width);
+  border-bottom-width: var(--grid-line-width);
   margin: 0;  /* Makes everything snug! (grid tracks replace the old -1px overlap) */
   background-color: var(--surface);
   color: var(--constraint-ink);
@@ -45,7 +45,7 @@
    on a 3x3 board on a phone and does not overflow the smallest cell at 9x9.
    No tabular-nums: Baloo 2 has no tabular figures, and these are 2-4 character labels. */
 .CellLabel {
-  font-family: "Baloo 2", var(--font-sans);
+  font-family: var(--clue-font);
   font-weight: 700;
   font-size: var(--cage-label-size);
   line-height: 1.1;
@@ -75,11 +75,11 @@
 }
 
 .borderRight {
-  border-right: 3px solid var(--cage-border) !important;
+  border-right: var(--cage-border-width) solid var(--cage-border) !important;
 }
 
 .borderBottom {
-  border-bottom: 3px solid var(--cage-border) !important;
+  border-bottom: var(--cage-border-width) solid var(--cage-border) !important;
 }
 
 /* Solved (SolveLifecycle.Success = 3): every cell shows its answer, so render cell

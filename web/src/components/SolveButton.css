@@ -14,7 +14,7 @@
   line-height: 1.5;
   letter-spacing: 0;
   text-shadow: none;
-  border: 3px solid var(--cage-border);
+  border: var(--border-width) solid var(--cage-border);
   border-radius: var(--radius-control);
   box-shadow: var(--shadow-control);
   transition: background-color 80ms ease, box-shadow 80ms ease, transform 80ms ease;
