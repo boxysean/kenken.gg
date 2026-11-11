@@ -16,8 +16,11 @@ exactly what `solveFromAPI` and `PlayPuzzle` already consume.
   `web/src/solver/Operator.ts`: `'+'`, `'-'`, `'x'`, `'/'`, or `''` (constant).
 - `ScannedBoard` — `boardSize`; `cageLetters`, one row-string per row; `clues`,
   keyed by cage letter.
-- `OcrSource` — `kind` (`'synthetic'` or `'photo'`), optional `seed` and `styleTag`.
-- `OcrLabel` — a `ScannedBoard` plus the board's `corners` and its `source`.
+- `OcrSource` — `kind` (`'synthetic'`, `'photo'`, or `'manual'` for a board drawn with no
+  photo), optional `seed` and `styleTag`.
+- `OcrLabel` — a `ScannedBoard` plus its `source` and, when there is a photo, the board's
+  `corners`. A board-only label (`kind: 'manual'`) has no `corners` key and cannot yield
+  photo crops. `PhotoLabel` is an `OcrLabel` whose `corners` are known to be present.
 
 ## Conventions (the existing ones, not new ones)
 

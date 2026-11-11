@@ -11,7 +11,7 @@ import { labelToBoard } from '../labelToBoard';
 import { distort } from '../render/distort';
 import type { DistortSpec, StyleTag } from '../render/distort';
 import { renderPuzzle } from '../render/synth';
-import type { OcrLabel, Quad, ScannedBoard } from '../types';
+import type { PhotoLabel, Quad, ScannedBoard } from '../types';
 import { templateClueReader } from '../pipeline/clueTemplate';
 import { scanPhoto } from '../pipeline/run';
 
@@ -135,7 +135,7 @@ function evaluate(recipe: Recipe): FixtureReport {
   const puzzle = generate(recipe.seed, recipe.boardSize);
   const rendered = renderPuzzle(puzzle, { tag: recipe.styleTag });
   const { image, corners } = distort(rendered.image, rendered.label.corners, { ...STYLE_SPECS[recipe.styleTag], seed: recipe.seed });
-  const label: OcrLabel = { ...rendered.label, corners };
+  const label: PhotoLabel = { ...rendered.label, corners };
   const result = scanPhoto(image, templateClueReader);
 
   const distances = result.corners ? cornerDistances(result.corners, label.corners) : null;

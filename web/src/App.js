@@ -15,6 +15,7 @@ import { solveInWorker } from './solver/workerClient';
 import PlayApp from './play/PlayApp';
 import ScanPanel from './ocr/ScanPanel';
 import LabelPanel from './ocr/LabelPanel';
+import BoardExport from './ocr/BoardExport';
 import { nextCageLetter } from './cageLetters';
 import { loadPrefs, savePrefs } from './play/persistence';
 import { loadStoredTheme, resolveTheme, saveTheme } from './theme';
@@ -30,6 +31,8 @@ class App extends React.Component {
     constraintCharToFormula: {},
     answers: [],
     solveLifecycle: SolveLifecycle.Inputting,
+    // The photo's corners for the export, from a scan or from LabelPanel; null without a photo.
+    corners: null,
   };
 
   TOOLTIP_MESSAGE = {};  // Why can't I set an object key with a dot?
@@ -274,8 +277,8 @@ class App extends React.Component {
     });
   }
 
-  // The editor's board as a ScannedBoard, for exporting the user's corrections
-  // as a label; null while the board is empty. Unset cells become empty tokens,
+  // The editor's board as a ScannedBoard, for BoardExport; null while the
+  // board is empty. Unset cells become empty tokens,
   // which validateLabel reports, so a half-drawn board can't be exported.
   currentBoard() {
     const boardSize = this.state.boardSize;
@@ -300,6 +303,12 @@ class App extends React.Component {
     });
 
     return { boardSize: boardSize, cageLetters: cageLetters, clues: clues };
+  }
+
+  setCorners(corners) {
+    this.setState({
+      corners: corners,
+    });
   }
 
   renderSolver() {
@@ -350,8 +359,9 @@ class App extends React.Component {
           ></ClearButton>
         }
 
-        <ScanPanel onLoadBoard={this.loadBoard.bind(this)} board={this.currentBoard()} />
-        <LabelPanel onOpenBoard={this.loadEmptyBoard.bind(this)} board={this.currentBoard()} />
+        <ScanPanel onLoadBoard={this.loadBoard.bind(this)} onCorners={this.setCorners.bind(this)} />
+        <LabelPanel onOpenBoard={this.loadEmptyBoard.bind(this)} onCorners={this.setCorners.bind(this)} />
+        <BoardExport board={this.currentBoard()} corners={this.state.corners} />
 
         {this.state.debugOverlay &&
           <ul>

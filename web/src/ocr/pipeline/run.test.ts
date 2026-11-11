@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { generate } from '../../play/generator/generate';
 import { distort } from '../render/distort';
 import { renderPuzzle } from '../render/synth';
-import type { OcrImage, OcrLabel, ScannedBoard } from '../types';
+import type { OcrImage, PhotoLabel, ScannedBoard } from '../types';
 import { templateClueReader } from './clueTemplate';
 import type { ClueReader } from './clueReader';
 import { MIN_CORNER_CONFIDENCE, scanPhoto } from './run';
@@ -25,11 +25,11 @@ const SAMPLES = [
   { name: 'kenken-6x6-perspective', boardSize: 6, distortion: { tag: 'perspective' as const, rotation: 6, perspective: 0.06 } },
 ];
 
-function loadFixture(sample: (typeof SAMPLES)[number]): { image: OcrImage; label: OcrLabel } {
+function loadFixture(sample: (typeof SAMPLES)[number]): { image: OcrImage; label: PhotoLabel } {
   const puzzle = generate(`synth-export-${sample.boardSize}x${sample.boardSize}`, sample.boardSize);
   const rendered = renderPuzzle(puzzle, { tag: sample.distortion.tag });
   const { image, corners } = distort(rendered.image, rendered.label.corners, { ...sample.distortion, seed: sample.name });
-  const label: OcrLabel = JSON.parse(readFileSync(`${FIXTURES}${sample.name}.json`, 'utf8'));
+  const label: PhotoLabel = JSON.parse(readFileSync(`${FIXTURES}${sample.name}.json`, 'utf8'));
   // The reconstruction must be the committed fixture: corners match the label's.
   for (const key of ['tl', 'tr', 'br', 'bl'] as const) {
     expect(Math.hypot(corners[key].x - label.corners[key].x, corners[key].y - label.corners[key].y)).toBeLessThan(1e-6);
@@ -64,8 +64,8 @@ describe('scanPhoto', () => {
   describe('on the fixture set', () => {
     // Scanned once per fixture and shared by the per-image and aggregate tests;
     // loading happens inside a test so loadFixture's corner checks run there.
-    const cache = new Map<string, { label: OcrLabel; result: ScanResult }>();
-    function scanned(sample: (typeof SAMPLES)[number]): { label: OcrLabel; result: ScanResult } {
+    const cache = new Map<string, { label: PhotoLabel; result: ScanResult }>();
+    function scanned(sample: (typeof SAMPLES)[number]): { label: PhotoLabel; result: ScanResult } {
       let entry = cache.get(sample.name);
       if (entry === undefined) {
         const { image, label } = loadFixture(sample);

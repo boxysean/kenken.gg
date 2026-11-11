@@ -3,7 +3,7 @@
 // the same puzzle and style always produce byte-identical output.
 import type { Operator } from '../../solver/Operator';
 import type { PlayPuzzle } from '../../play/types';
-import type { Clue, OcrImage, OcrLabel, Quad } from '../types';
+import type { Clue, OcrImage, PhotoLabel, Quad } from '../types';
 import { GLYPH_HEIGHT, GLYPH_WIDTH, glyphFor } from './glyphs';
 
 export type Rgba = readonly [number, number, number, number];
@@ -169,7 +169,7 @@ function fillRect(image: OcrImage, x: number, y: number, width: number, height: 
   }
 }
 
-export function renderPuzzle(puzzle: PlayPuzzle, style: Partial<SynthStyle> = {}): { image: OcrImage; label: OcrLabel } {
+export function renderPuzzle(puzzle: PlayPuzzle, style: Partial<SynthStyle> = {}): { image: OcrImage; label: PhotoLabel } {
   const merged: SynthStyle = { ...DEFAULT_SYNTH_STYLE, ...style };
   const n = puzzle.boardSize;
   const letters = puzzle.boardStrings.map((row) => row.split(' '));
@@ -242,7 +242,7 @@ export function renderPuzzle(puzzle: PlayPuzzle, style: Partial<SynthStyle> = {}
   }
 
   const { corners } = geometry;
-  const label: OcrLabel = {
+  const label: PhotoLabel = {
     boardSize: n,
     cageLetters: [...puzzle.boardStrings],
     clues,

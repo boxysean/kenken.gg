@@ -2,7 +2,7 @@
 // generator's emit stage (finish() in web/src/play/generator/generate.ts), and
 // validates a label before it is converted. See README.md.
 import { CAGE_LETTERS } from '../cageLetters';
-import type { ScannedBoard } from './types';
+import type { OcrLabel, ScannedBoard } from './types';
 
 export interface BoardConversion {
   boardStrings: string[];
@@ -41,10 +41,19 @@ export function labelToBoard(label: ScannedBoard): BoardConversion {
 
 const OPERATORS: readonly string[] = ['+', '-', 'x', '/', ''];
 
+const CORNER_NAMES = ['tl', 'tr', 'br', 'bl'] as const;
+
+function isPoint(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const { x, y } = value as Record<string, unknown>;
+  return typeof x === 'number' && Number.isFinite(x) && typeof y === 'number' && Number.isFinite(y);
+}
+
 // Returns every problem with the label, empty when it is valid. Shape checks
-// come first, then contiguity, then clue coverage; within each, row-major
-// order for cells and cages, then clue order for clues.
-export function validateLabel(label: ScannedBoard): string[] {
+// come first, then contiguity, then clue coverage, then the corners if the
+// label has any; within each, row-major order for cells and cages, then clue
+// order for clues.
+export function validateLabel(label: OcrLabel | ScannedBoard): string[] {
   const errors: string[] = [];
   const { boardSize } = label;
 
@@ -123,6 +132,21 @@ export function validateLabel(label: ScannedBoard): string[] {
     }
     if (!OPERATORS.includes(clue.operator)) {
       errors.push(`clue ${name} has operator ${JSON.stringify(clue.operator)}, which is not one of "+", "-", "x", "/" or ""`);
+    }
+  }
+
+  // Corners, last. A board-only label has none, which is fine; any it does
+  // have must be a full quad of finite points.
+  if ('corners' in label && label.corners !== undefined) {
+    const corners: unknown = label.corners;
+    if (typeof corners !== 'object' || corners === null) {
+      errors.push(`corners is ${JSON.stringify(corners)}, which is not a {tl, tr, br, bl} quad`);
+    } else {
+      for (const name of CORNER_NAMES) {
+        if (!isPoint((corners as Record<string, unknown>)[name])) {
+          errors.push(`corners.${name} is missing or not an {x, y} point`);
+        }
+      }
     }
   }
 

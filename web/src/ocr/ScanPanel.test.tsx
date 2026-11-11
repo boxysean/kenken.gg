@@ -1,16 +1,15 @@
 // The pipeline is mocked (scan returns a canned ScanResult); the ingest store is
-// the real one, primed with setImage. jsdom has no download machinery, so Blob
-// and URL.createObjectURL/revokeObjectURL are stubbed with vi.stubGlobal to
-// capture exactly what would have been saved, and the link click is a no-op.
+// the real one, primed with setImage. The export itself is BoardExport's, tested
+// in BoardExport.test.tsx; this panel only reports the corners up.
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { act } from 'react-dom/test-utils';
-import ScanPanel, { downloadJson } from './ScanPanel';
+import ScanPanel from './ScanPanel';
 import type { ScanPanelProps } from './ScanPanel';
 import { clearImage, setImage } from './ingest/store';
-import { labelToBoard, validateLabel } from './labelToBoard';
+import { labelToBoard } from './labelToBoard';
 import type { ScanResult } from './pipeline/run';
-import type { OcrImage, OcrLabel, Quad, ScannedBoard } from './types';
+import type { OcrImage, Quad, ScannedBoard } from './types';
 
 const CORNERS: Quad = {
   tl: { x: 12, y: 10 },
@@ -32,45 +31,7 @@ const SCANNED: ScannedBoard = {
 
 const OK_RESULT: ScanResult = { board: SCANNED, corners: CORNERS, lowConfidenceCages: ['d'], errors: [] };
 
-// The user's corrected board: the missing clue filled in.
-const CORRECTED: ScannedBoard = {
-  ...SCANNED,
-  clues: { ...SCANNED.clues, d: { target: 3, operator: '/' } },
-};
-
 const IMAGE: OcrImage = { width: 2, height: 2, data: new Uint8ClampedArray(16) };
-
-class CapturingBlob {
-  static last: CapturingBlob | null = null;
-  constructor(public parts: unknown[], public options?: { type?: string }) {
-    CapturingBlob.last = this;
-  }
-}
-
-function stubDownload() {
-  CapturingBlob.last = null;
-  vi.stubGlobal('Blob', CapturingBlob);
-  const createObjectURL = vi.fn(() => 'blob:fake-url');
-  const revokeObjectURL = vi.fn();
-  // A subclass, not a plain object, so `new URL(...)` keeps working elsewhere.
-  vi.stubGlobal('URL', class extends URL {
-    static createObjectURL = createObjectURL;
-    static revokeObjectURL = revokeObjectURL;
-  });
-  // jsdom would try (and fail, noisily) to navigate to the blob URL. Records
-  // each clicked link, with what it looked like at click time.
-  const links: { download: string; href: string | null; connected: boolean }[] = [];
-  const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-    links.push({ download: this.download, href: this.getAttribute('href'), connected: this.isConnected });
-  });
-  return { createObjectURL, revokeObjectURL, click, links };
-}
-
-function capturedLabel(): OcrLabel {
-  expect(CapturingBlob.last).not.toBeNull();
-  expect(CapturingBlob.last!.options).toEqual({ type: 'application/json' });
-  return JSON.parse(CapturingBlob.last!.parts.join(''));
-}
 
 let container: HTMLDivElement;
 
@@ -156,56 +117,71 @@ describe('ScanPanel', () => {
     expect(onLoadBoard.mock.calls[0][0]).toEqual(labelToBoard(SCANNED));
   });
 
-  it('downloads the editor board plus the detected corners as a valid label', async () => {
-    const { createObjectURL, revokeObjectURL, links } = stubDownload();
-    renderPanel({ board: CORRECTED });
+  it('has no export of its own: that is BoardExport\'s', async () => {
+    renderPanel();
     await primeImage();
-
-    const download = byTestId('scan-download') as HTMLButtonElement;
-    expect(download.textContent).toBe('Download label JSON');
-    expect(download.disabled).toBe(false);
-    act(() => download.click());
-
-    const label = capturedLabel();
-    expect(validateLabel(label)).toEqual([]);
-    expect(label.corners).toEqual(CORNERS);
-    // The user's corrections, not the raw scan.
-    expect(label.clues).toEqual(CORRECTED.clues);
-    expect(label.cageLetters).toEqual(CORRECTED.cageLetters);
-    expect(label.source).toEqual({ kind: 'photo' });
-
-    expect(links).toEqual([{ download: 'kenken-label.json', href: 'blob:fake-url', connected: true }]);
-    // The temporary link is removed again after the click.
-    expect(container.ownerDocument.querySelector('a[download]')).toBeNull();
-    expect(createObjectURL).toHaveBeenCalledWith(CapturingBlob.last);
-    expect(revokeObjectURL).toHaveBeenCalledWith('blob:fake-url');
-    expect(byTestId('scan-errors')).toBeNull();
-  });
-
-  it('shows validator errors instead of downloading an invalid editor board', async () => {
-    const { click } = stubDownload();
-    // The raw scan, still missing cage d's clue.
-    renderPanel({ board: SCANNED });
-    await primeImage();
-
-    act(() => (byTestId('scan-download') as HTMLButtonElement).click());
-
-    expect(byTestId('scan-errors')!.textContent).toContain('cage "d" has no clue');
-    expect(CapturingBlob.last).toBeNull();
-    expect(click).not.toHaveBeenCalled();
-    // The actions stay: the user can correct the board and try again.
     expect(byTestId('scan-load')).not.toBeNull();
+    expect(byTestId('scan-download')).toBeNull();
+    expect(container.querySelectorAll('button')).toHaveLength(2); // the picker and "Load into editor"
   });
 
-  it('disables the download while the editor board is empty', async () => {
-    renderPanel({ board: null });
+  it('reports the detected corners up on a successful scan', async () => {
+    const onCorners = vi.fn();
+    renderPanel({ onCorners });
     await primeImage();
-    expect((byTestId('scan-download') as HTMLButtonElement).disabled).toBe(true);
+    expect(onCorners).toHaveBeenLastCalledWith(CORNERS);
+  });
+
+  it('reports null corners when the scan fails', async () => {
+    const onCorners = vi.fn();
+    const failed: ScanResult = { lowConfidenceCages: [], errors: ['corners: no board frame found (confidence 0.00)'] };
+    // Twice: a success first, so null is a change and not just the initial state.
+    const scan = vi.fn().mockReturnValueOnce(OK_RESULT).mockReturnValueOnce(failed);
+    renderPanel({ scan, onCorners });
+    await primeImage();
+    expect(onCorners).toHaveBeenLastCalledWith(CORNERS);
+
+    await primeImage({ ...IMAGE });
+    expect(onCorners).toHaveBeenLastCalledWith(null);
+    expect(onCorners).not.toHaveBeenCalledWith(undefined);
+  });
+
+  it('reports null corners when the image is cleared', async () => {
+    const onCorners = vi.fn();
+    renderPanel({ onCorners });
+    await primeImage();
+    expect(onCorners).toHaveBeenLastCalledWith(CORNERS);
+
+    act(() => clearImage());
+    expect(onCorners).toHaveBeenLastCalledWith(null);
+  });
+
+  it('never reports corners for a stale scan', async () => {
+    const onCorners = vi.fn();
+    const second: OcrImage = { width: 3, height: 3, data: new Uint8ClampedArray(36) };
+    const failed: ScanResult = { lowConfidenceCages: [], errors: ['corners: no board frame found (confidence 0.00)'] };
+    const scan = vi.fn((image: OcrImage): ScanResult => (image === second ? failed : OK_RESULT));
+    renderPanel({ scan, onCorners });
+
+    act(() => setImage(IMAGE));
+    act(() => setImage(second));
+    await settle();
+
+    expect(onCorners).not.toHaveBeenCalledWith(CORNERS);
+    expect(onCorners).toHaveBeenLastCalledWith(null);
+  });
+
+  it('does not rescan when the parent re-renders with a new onCorners callback', async () => {
+    const { scan } = renderPanel({ onCorners: vi.fn() });
+    await primeImage();
+    renderPanel({ scan, onCorners: vi.fn() });
+    await settle();
+    expect(scan).toHaveBeenCalledTimes(1);
   });
 
   it('renders a failed scan as errors with no actions, and never loads', async () => {
     const failed: ScanResult = { lowConfidenceCages: [], errors: ['corners: no board frame found (confidence 0.00)'] };
-    const { onLoadBoard } = renderPanel({ scan: vi.fn(() => failed), board: CORRECTED });
+    const { onLoadBoard } = renderPanel({ scan: vi.fn(() => failed) });
     await primeImage();
 
     const errors = byTestId('scan-errors')!;
@@ -213,7 +189,6 @@ describe('ScanPanel', () => {
     expect(errors.textContent).toBe('corners: no board frame found (confidence 0.00)');
     expect(container.textContent).toContain('nothing was loaded into the editor');
     expect(byTestId('scan-load')).toBeNull();
-    expect(byTestId('scan-download')).toBeNull();
     expect(byTestId('scan-summary')).toBeNull();
     expect(onLoadBoard).not.toHaveBeenCalled();
   });
@@ -261,15 +236,5 @@ describe('ScanPanel', () => {
     await settle();
     expect(scan).not.toHaveBeenCalled();
     expect(consoleError).not.toHaveBeenCalled();
-  });
-});
-
-describe('downloadJson', () => {
-  it('saves pretty-printed JSON under the given name and revokes the URL', () => {
-    const { revokeObjectURL, links } = stubDownload();
-    downloadJson({ a: [1] }, 'out.json');
-    expect(CapturingBlob.last!.parts.join('')).toBe('{\n  "a": [\n    1\n  ]\n}');
-    expect(links.map((link) => link.download)).toEqual(['out.json']);
-    expect(revokeObjectURL).toHaveBeenCalledWith('blob:fake-url');
   });
 });

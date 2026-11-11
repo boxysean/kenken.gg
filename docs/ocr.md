@@ -35,7 +35,9 @@ toggle. The **Scan a photo** button sits under the board.
    (`boardStrings` / `constraintString` exactly as in `kenken-4x4-clean.json`.) The editor is
    back in its drawing state: answers cleared, **Solve!** enabled. Any cage can be redrawn and
    any clue retyped as usual before solving.
-4. Click **Download label JSON**. The browser saves `kenken-label.json`:
+4. Click **Export JSON**, the solver view's one export control (it sits under the photo panels
+   and is there with or without a photo; see [The export control](#the-export-control)). A
+   successful scan hands its corners to it, so the browser saves `kenken-label.json`:
 
    ```json
    {
@@ -52,8 +54,8 @@ toggle. The **Scan a photo** button sits under the board.
    corners are the ones the scan detected, unrounded (e.g. `23.999969482421875` for the
    fixture's `24`; within half a pixel of the true frame on all six fixtures). The label is run through `validateLabel` first: if
    the editor board is incomplete (an unset cell, a cage with no clue), the problems are
-   listed in red under the summary and nothing is downloaded. The button is disabled while
-   the editor board is empty.
+   listed in red under the button and nothing is downloaded. The button is disabled, with
+   the reason shown under it, while the editor board is empty.
 
 ## A blank image
 
@@ -61,8 +63,9 @@ Pick any all-white PNG. The panel shows, in red:
 
 > corners: no board frame found (confidence 0.00)
 
-plus "The scan failed, so nothing was loaded into the editor." There is no **Load** or
-**Download** button and the editor board is exactly as it was.
+plus "The scan failed, so nothing was loaded into the editor." There is no **Load** button and
+the editor board is exactly as it was. A failed scan has no corners, so **Export JSON** would
+save the board alone, as `kenken-board.json`.
 
 ## The other fixtures
 
@@ -181,13 +184,33 @@ Corner detection fails on most real photos, so a label can be made by hand inste
 3. Pick the **Board size** (4×4 to 9×9) and click **Open in editor**. The editor loads an empty
    board of that size; the corners stay marked on the photo.
 4. Draw every cage and type its clue as usual.
-5. Optionally type a **Style tag** (e.g. `newspaper`), then click **Export label JSON**. The
-   browser saves `kenken-label.json` with `"source": { "kind": "photo", "styleTag": … }`.
+5. With four corners marked, the export control shows a **Style tag** field. Optionally type
+   one (e.g. `newspaper`), then click **Export JSON**. The browser saves `kenken-label.json`
+   with `"source": { "kind": "photo", "styleTag": … }`.
 
 The corners are exported in the **photo's own pixels**, not the scaled pixels it is displayed
-at. As with the scan export, the label goes through `validateLabel` first: if it is invalid
-(an unset cell, a cage with no clue) the problems are listed in red and nothing is downloaded.
-`web/e2e/label.spec.ts` drives this whole path in Chromium (`npm run test:e2e`).
+at. Undoing a corner, or picking a new photo, takes the corners away from the export again
+until all four are marked. `web/e2e/label.spec.ts` drives this whole path in Chromium
+(`npm run test:e2e`), and also exports a board drawn with no photo at all.
+
+## The export control
+
+The solver view has one **Export JSON** button, under the photo panels. It is always there,
+photo or not, and is disabled — with "Draw at least one cage on the board to export it." under
+it — only while the editor board is empty. It exports the **editor's current board**, and saves
+one of two files:
+
+- **`kenken-label.json`** — the full label: the board plus the photo's four corners (from a
+  successful scan, or the four clicked in **Label a photo**), `"source": { "kind": "photo" }`
+  and the optional style tag. Usable for crop extraction.
+- **`kenken-board.json`** — the board alone, when there are no corners: `"source": { "kind":
+  "manual" }` and no `corners` key at all. It is a complete cage map, so still training data,
+  but it cannot yield photo crops.
+
+Either way the file goes through `validateLabel` first: if it is invalid (an unset cell, a cage
+with no clue, a cage name outside the printable alphabet) the problems are listed in red and
+nothing is downloaded. `validateLabel` accepts a label with no `corners`; corners that are
+present must be a full `{tl, tr, br, bl}` quad of finite `{x, y}` points.
 
 ## Checking label files
 

@@ -2,9 +2,9 @@ import labelsJson from './__fixtures__/labels.json?raw';
 import { boardToLabel } from './boardToLabel';
 import { labelToBoard, validateLabel } from './labelToBoard';
 import type { BoardConversion } from './labelToBoard';
-import type { OcrLabel } from './types';
+import type { PhotoLabel } from './types';
 
-const fixtures = JSON.parse(labelsJson) as { valid: { name: string; label: OcrLabel; expected: BoardConversion }[] };
+const fixtures = JSON.parse(labelsJson) as { valid: { name: string; label: PhotoLabel; expected: BoardConversion }[] };
 
 describe('boardToLabel', () => {
   for (const { name, label, expected } of fixtures.valid) {

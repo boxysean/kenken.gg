@@ -1,30 +1,14 @@
 // Drives the real panel. jsdom neither decodes images nor lays them out, so the
 // <img> gets its natural size and bounding rect stubbed before a dispatched
-// load event; Blob and URL are stubbed with vi.stubGlobal (as in
-// ScanPanel.test.tsx) to capture exactly what would have been saved.
+// load event; URL.createObjectURL/revokeObjectURL are stubbed with
+// vi.stubGlobal. The export itself is BoardExport's (BoardExport.test.tsx):
+// this panel only reports its corners up through onCorners.
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { act } from 'react-dom/test-utils';
 import LabelPanel from './LabelPanel';
 import type { LabelPanelProps } from './LabelPanel';
-import { boardToLabel } from './boardToLabel';
-import { labelToBoard, validateLabel } from './labelToBoard';
-import type { OcrLabel, Point, Quad, ScannedBoard } from './types';
-
-// A real, uniquely solvable 4x4 (the kenken-4x4-clean fixture's cages).
-const BOARD: ScannedBoard = {
-  boardSize: 4,
-  cageLetters: ['a b b c', 'a d d c', 'e e f c', 'g g f f'],
-  clues: {
-    a: { target: 2, operator: '-' },
-    b: { target: 2, operator: '/' },
-    c: { target: 6, operator: 'x' },
-    d: { target: 3, operator: '-' },
-    e: { target: 2, operator: '-' },
-    f: { target: 12, operator: 'x' },
-    g: { target: 1, operator: '-' },
-  },
-};
+import type { Point, Quad } from './types';
 
 // Displayed at 300x200 over a natural 900x600: every click scales by 3.
 const DISPLAYED = { width: 300, height: 200 };
@@ -37,16 +21,8 @@ const CORNERS: Quad = {
   bl: { x: 60, y: 540 },
 };
 
-class CapturingBlob {
-  static last: CapturingBlob | null = null;
-  constructor(public parts: unknown[], public options?: { type?: string }) {
-    CapturingBlob.last = this;
-  }
-}
-
 let container: HTMLDivElement;
 let revokeObjectURL: ReturnType<typeof vi.fn<[string], void>>;
-let clickedLinks: string[];
 
 function byTestId(id: string): HTMLElement | null {
   return container.querySelector(`[data-testid="${id}"]`);
@@ -95,38 +71,15 @@ function clickAll(points: readonly Point[] = CLICKS) {
   points.forEach(clickImage);
 }
 
-function exportLabel(styleTag?: string) {
-  if (styleTag !== undefined) {
-    const input = byTestId('label-style') as HTMLInputElement;
-    // React tracks the value itself; set it through the native setter so onChange sees the change.
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, styleTag);
-    act(() => {
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-  }
-  act(() => (byTestId('label-export') as HTMLButtonElement).click());
-}
-
-function capturedLabel(): OcrLabel {
-  expect(CapturingBlob.last).not.toBeNull();
-  return JSON.parse(CapturingBlob.last!.parts.join(''));
-}
-
 beforeEach(() => {
   container = document.createElement('div');
   document.body.appendChild(container);
-  CapturingBlob.last = null;
-  vi.stubGlobal('Blob', CapturingBlob);
   let next = 0;
   const createObjectURL = vi.fn(() => `blob:fake-${++next}`);
   revokeObjectURL = vi.fn<[string], void>();
   vi.stubGlobal('URL', class extends URL {
     static createObjectURL = createObjectURL;
     static revokeObjectURL = revokeObjectURL;
-  });
-  clickedLinks = [];
-  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-    clickedLinks.push(this.download);
   });
 });
 
@@ -247,77 +200,76 @@ describe('LabelPanel', () => {
     expect(markers()).toHaveLength(4);
   });
 
-  it('offers the export only once there are four corners and an editor board', () => {
-    render({ board: null });
+  it('has no export or style tag of its own: those are BoardExport\'s', () => {
+    render();
     pickPhoto();
     clickAll();
-    expect(byTestId('label-export')).toBeNull();
-    expect(byTestId('label-style')).toBeNull();
-
-    render({ board: BOARD });
-    expect(byTestId('label-export')!.textContent).toBe('Export label JSON');
-    expect((byTestId('label-style') as HTMLInputElement).placeholder).toBe('newspaper');
+    expect(byTestId('label-open')).not.toBeNull();
+    expect(container.querySelector('input[type="text"]')).toBeNull();
+    expect(container.textContent).not.toContain('Export');
   });
 
-  it('exports corners in natural pixels, not the displayed ones', () => {
-    render({ board: BOARD });
+  it('reports null corners until all four are marked', () => {
+    const onCorners = vi.fn();
+    render({ onCorners });
+    expect(onCorners).toHaveBeenLastCalledWith(null);
     pickPhoto();
-    clickAll();
-    exportLabel();
-    const label = capturedLabel();
-    expect(label.corners.tl).toEqual({ x: 90, y: 120 });
-    expect(label.corners).toEqual(CORNERS);
+    clickAll(CLICKS.slice(0, 3));
+    expect(onCorners).not.toHaveBeenCalledWith(expect.objectContaining({ tl: expect.anything() }));
+    expect(onCorners).toHaveBeenLastCalledWith(null);
   });
 
-  it('exports a valid label equal to boardToLabel, which round-trips through labelToBoard', () => {
-    render({ board: BOARD });
+  it('reports the four corners in natural pixels, not the displayed ones', () => {
+    const onCorners = vi.fn();
+    render({ onCorners });
     pickPhoto();
     clickAll();
-    exportLabel();
-
-    const label = capturedLabel();
-    expect(clickedLinks).toEqual(['kenken-label.json']);
-    expect(validateLabel(label)).toEqual([]);
-    expect(label).toEqual(boardToLabel(BOARD, CORNERS, { kind: 'photo' }));
-    expect(label.source).toEqual({ kind: 'photo' });
-    const roundTrip = labelToBoard(label);
-    const original = labelToBoard(BOARD);
-    expect(roundTrip.boardStrings).toEqual(original.boardStrings);
-    expect(roundTrip.constraintString).toEqual(original.constraintString);
-    expect(byTestId('label-errors')).toBeNull();
+    expect(onCorners).toHaveBeenLastCalledWith(CORNERS);
+    expect(onCorners.mock.calls[onCorners.mock.calls.length - 1][0].tl).toEqual({ x: 90, y: 120 });
   });
 
-  it('records a trimmed style tag, and omits it when blank', () => {
-    render({ board: BOARD });
+  it('reports null again when a corner is undone, and the new quad once it is replaced', () => {
+    const onCorners = vi.fn();
+    render({ onCorners });
     pickPhoto();
     clickAll();
+    expect(onCorners).toHaveBeenLastCalledWith(CORNERS);
 
-    exportLabel('  newspaper ');
-    expect(capturedLabel().source).toEqual({ kind: 'photo', styleTag: 'newspaper' });
+    act(() => (byTestId('label-undo') as HTMLButtonElement).click());
+    expect(onCorners).toHaveBeenLastCalledWith(null);
 
-    exportLabel('   ');
-    const source = capturedLabel().source;
-    expect(source).toEqual({ kind: 'photo' });
-    expect('styleTag' in source).toBe(false);
+    clickImage({ x: 150, y: 100 });
+    expect(onCorners).toHaveBeenLastCalledWith({ ...CORNERS, bl: { x: 450, y: 300 } });
   });
 
-  it('shows the problems with an invalid board and downloads nothing', () => {
-    // Cage "d" has lost its clue, and the last cell is empty.
-    const invalid: ScannedBoard = {
-      ...BOARD,
-      cageLetters: ['a b b c', 'a d d c', 'e e f c', 'g g f '],
-      clues: Object.fromEntries(Object.entries(BOARD.clues).filter(([letter]) => letter !== 'd')),
-    };
-    render({ board: invalid });
+  it('reports null when a new photo is picked', () => {
+    const onCorners = vi.fn();
+    render({ onCorners });
     pickPhoto();
     clickAll();
-    exportLabel();
+    expect(onCorners).toHaveBeenLastCalledWith(CORNERS);
 
-    const errors = byTestId('label-errors')!;
-    expect(errors.getAttribute('role')).toBe('alert');
-    expect(errors.textContent).toContain('cage "d" has no clue');
-    expect(errors.textContent).toContain('row 3, column 3 is empty');
-    expect(CapturingBlob.last).toBeNull();
-    expect(clickedLinks).toEqual([]);
+    pickPhoto('second.jpg');
+    expect(onCorners).toHaveBeenLastCalledWith(null);
+  });
+
+  it('keeps reporting the corners after "Open in editor", and only when they change', () => {
+    const onCorners = vi.fn();
+    render({ onCorners });
+    pickPhoto();
+    clickAll();
+    const calls = onCorners.mock.calls.length;
+
+    act(() => (byTestId('label-open') as HTMLButtonElement).click());
+    expect(onCorners).toHaveBeenCalledTimes(calls);
+    expect(onCorners).toHaveBeenLastCalledWith(CORNERS);
+    // A parent re-render with a fresh callback is not a change of corners.
+    const fresh = vi.fn();
+    render({ onCorners: fresh });
+    expect(fresh).not.toHaveBeenCalled();
+    expect(markers()).toHaveLength(4);
+    // But the fresh callback is the one used from then on.
+    act(() => (byTestId('label-undo') as HTMLButtonElement).click());
+    expect(fresh).toHaveBeenLastCalledWith(null);
   });
 });

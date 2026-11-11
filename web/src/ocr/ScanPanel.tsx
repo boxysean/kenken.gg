@@ -1,16 +1,15 @@
 // "Scan a photo", end to end: the picker (ScanButton) fills the ingest store,
 // this panel runs the recognition pipeline on whatever lands there, summarises
-// what it found, and offers to load the board into the editor. Once the user has
-// corrected the board by hand, "Download label JSON" exports their corrections
-// plus the detected corners as an OcrLabel, ready to become a training example.
+// what it found, and offers to load the board into the editor. The detected
+// corners go up through onCorners, so the solver view's export control
+// (BoardExport) can save the corrected board plus those corners as a label.
 import React, { useEffect, useRef, useState } from 'react';
 import type { OcrImage, Quad, ScannedBoard } from './types';
 import ScanButton from './ScanButton';
 import type { ScanStore } from './ScanButton';
 import * as ingestStore from './ingest/store';
-import { labelToBoard, validateLabel } from './labelToBoard';
+import { labelToBoard } from './labelToBoard';
 import type { BoardConversion } from './labelToBoard';
-import { boardToLabel } from './boardToLabel';
 import { scanPhoto } from './pipeline/run';
 import type { ScanResult } from './pipeline/run';
 import type { ClueReader } from './pipeline/clueReader';
@@ -20,27 +19,12 @@ import './ScanPanel.css';
 
 export interface ScanPanelProps {
   onLoadBoard: (conversion: BoardConversion) => void;
-  board?: ScannedBoard | null; // the CURRENT editor board, for the download
+  // The detected corners on a successful scan; null when the image is cleared,
+  // replaced, or the scan fails.
+  onCorners?: (corners: Quad | null) => void;
   scan?: typeof scanPhoto;
   reader?: ClueReader; // overrides the default, the ONNX reader (or its template fallback)
   store?: ScanStore;
-}
-
-export const LABEL_FILENAME = 'kenken-label.json';
-
-// Saves a value as a pretty-printed JSON file through a temporary object URL.
-// Kept apart from the component so tests can drive it with Blob and URL stubbed.
-export function downloadJson(value: unknown, filename: string = LABEL_FILENAME): void {
-  const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = url;
-  // Firefox ignores clicks on links that are not in the document.
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
 }
 
 function cageCount(board: ScannedBoard): number {
@@ -55,7 +39,7 @@ function readerName(reader: ClueReader): string {
 
 const ScanPanel: React.FC<ScanPanelProps> = ({
   onLoadBoard,
-  board = null,
+  onCorners,
   scan = scanPhoto,
   reader,
   store = ingestStore,
@@ -64,10 +48,20 @@ const ScanPanel: React.FC<ScanPanelProps> = ({
   const requestRef = useRef(0);
   // The reader in use, once loaded; scans wait for it.
   const readerRef = useRef<Promise<ClueReader>>(Promise.resolve(templateClueReader));
+  // Read through a ref so a new callback each render does not resubscribe (and rescan).
+  const onCornersRef = useRef(onCorners);
+  onCornersRef.current = onCorners;
   const [activeReader, setActiveReader] = useState<string | undefined>(undefined);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [busy, setBusy] = useState(false);
-  const [exportErrors, setExportErrors] = useState<string[]>([]);
+
+  // Every result change goes through here, so the corners reported up always
+  // belong to the result on screen, never to a stale scan.
+  const showResult = (next: ScanResult | null) => {
+    setResult(next);
+    const corners = next && next.errors.length === 0 && next.board && next.corners ? next.corners : null;
+    if (onCornersRef.current) onCornersRef.current(corners);
+  };
 
   // Declared before the store subscription so readerRef is set when it first fires.
   useEffect(() => {
@@ -88,14 +82,13 @@ const ScanPanel: React.FC<ScanPanelProps> = ({
     const unsubscribe = store.subscribe((image: OcrImage | null) => {
       const request = ++requestRef.current;
       if (timer !== undefined) clearTimeout(timer);
-      setExportErrors([]);
       if (image === null) {
         setBusy(false);
-        setResult(null);
+        showResult(null);
         return;
       }
       setBusy(true);
-      setResult(null);
+      showResult(null);
       // The pipeline is synchronous and runs on the main thread (no worker yet),
       // so it is deferred a tick to let "Scanning…" paint before the page blocks.
       timer = setTimeout(() => {
@@ -126,7 +119,7 @@ const ScanPanel: React.FC<ScanPanelProps> = ({
             return;
           }
           setBusy(false);
-          setResult(scanned);
+          showResult(scanned);
         });
       }, 0);
     });
@@ -136,24 +129,13 @@ const ScanPanel: React.FC<ScanPanelProps> = ({
       if (timer !== undefined) clearTimeout(timer);
       unsubscribe();
     };
+    // showResult only touches state setters and a ref, so it is not a dependency.
   }, [store, scan, reader]);
-
-  const onDownload = (corners: Quad) => {
-    if (!board) {
-      return;
-    }
-    const label = boardToLabel(board, corners);
-    const problems = validateLabel(label);
-    setExportErrors(problems);
-    if (problems.length === 0) {
-      downloadJson(label);
-    }
-  };
 
   const failed = result !== null && result.errors.length > 0;
   const scannedBoard = result && !failed ? result.board : undefined;
   const corners = result && !failed ? result.corners : undefined;
-  const shownErrors = failed ? result!.errors : exportErrors;
+  const shownErrors = failed ? result!.errors : [];
 
   return (
     <div className="ScanPanel" data-reader={activeReader}>
@@ -191,13 +173,6 @@ const ScanPanel: React.FC<ScanPanelProps> = ({
             data-testid="scan-load"
             onClick={() => onLoadBoard(labelToBoard(scannedBoard))}
           >Load into editor</button>
-          <button
-            type="button"
-            className="ScanPanelButton"
-            data-testid="scan-download"
-            disabled={!board}
-            onClick={() => onDownload(corners)}
-          >Download label JSON</button>
         </div>
       }
     </div>

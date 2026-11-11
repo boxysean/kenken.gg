@@ -1,20 +1,19 @@
 // "Label a photo", by hand: the scanner's corner detection fails on most real
-// photos, so the user clicks the board's four corners instead, draws the cages
-// in the editor as usual, and exports the editor board plus those corners as
-// an OcrLabel. The corners live here, not in the editor, so opening an empty
-// board of the right size does not lose them.
+// photos, so the user clicks the board's four corners instead and draws the
+// cages in the editor as usual. The corners go up through onCorners, so the
+// solver view's export control (BoardExport) can save the editor board plus
+// those corners as an OcrLabel. The corners live here, not in the editor, so
+// opening an empty board of the right size does not lose them.
 import React, { useEffect, useRef, useState } from 'react';
-import type { Point, ScannedBoard } from './types';
+import type { Point, Quad } from './types';
 import { addCorner, clicksToQuad, displayPoint, nextCornerName } from './label/cornersFromClicks';
 import type { CornerName, DisplaySize } from './label/cornersFromClicks';
-import { boardToLabel } from './boardToLabel';
-import { validateLabel } from './labelToBoard';
-import { downloadJson, LABEL_FILENAME } from './ScanPanel';
 import './LabelPanel.css';
 
 export interface LabelPanelProps {
   onOpenBoard: (boardSize: number) => void; // loads an empty board of that size into the editor
-  board?: ScannedBoard | null; // the CURRENT editor board, for the export
+  // The four clicked corners, in photo pixels; null until all four are marked.
+  onCorners?: (corners: Quad | null) => void;
 }
 
 const CORNER_PROMPT: Record<CornerName, string> = {
@@ -26,19 +25,26 @@ const CORNER_PROMPT: Record<CornerName, string> = {
 
 const BOARD_SIZES = [4, 5, 6, 7, 8, 9];
 
-const LabelPanel: React.FC<LabelPanelProps> = ({ onOpenBoard, board = null }) => {
+const LabelPanel: React.FC<LabelPanelProps> = ({ onOpenBoard, onCorners }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [src, setSrc] = useState<string | null>(null);
   const [natural, setNatural] = useState<DisplaySize | null>(null);
   const [clicks, setClicks] = useState<Point[]>([]);
   const [boardSize, setBoardSize] = useState(5);
-  const [styleTag, setStyleTag] = useState('');
-  const [exportErrors, setExportErrors] = useState<string[]>([]);
+  // Read through a ref: keyed on the callback, the effect below would fire on
+  // every parent render, and each call re-renders the parent.
+  const onCornersRef = useRef(onCorners);
+  onCornersRef.current = onCorners;
 
   // Revokes the previous photo's URL when a new one replaces it, and the last on unmount.
   useEffect(() => () => {
     if (src !== null) URL.revokeObjectURL(src);
   }, [src]);
+
+  // Keyed on clicks, not the derived quad, which is a fresh object every render.
+  useEffect(() => {
+    if (onCornersRef.current) onCornersRef.current(clicksToQuad(clicks));
+  }, [clicks]);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target;
@@ -51,7 +57,6 @@ const LabelPanel: React.FC<LabelPanelProps> = ({ onOpenBoard, board = null }) =>
     // Corners from the previous photo mean nothing on this one.
     setNatural(null);
     setClicks([]);
-    setExportErrors([]);
     setSrc(URL.createObjectURL(file));
   };
 
@@ -69,29 +74,14 @@ const LabelPanel: React.FC<LabelPanelProps> = ({ onOpenBoard, board = null }) =>
     const rect = event.currentTarget.getBoundingClientRect();
     const local = { x: event.clientX - rect.left, y: event.clientY - rect.top };
     setClicks(addCorner(clicks, local, { width: rect.width, height: rect.height }, natural));
-    setExportErrors([]);
   };
 
   const onUndo = () => {
     setClicks(clicks.slice(0, -1));
-    setExportErrors([]);
   };
 
   const corners = clicksToQuad(clicks);
   const next = nextCornerName(clicks.length);
-
-  const onExport = () => {
-    if (!board || !corners) {
-      return;
-    }
-    const tag = styleTag.trim();
-    const label = boardToLabel(board, corners, tag ? { kind: 'photo', styleTag: tag } : { kind: 'photo' });
-    const problems = validateLabel(label);
-    setExportErrors(problems);
-    if (problems.length === 0) {
-      downloadJson(label, LABEL_FILENAME);
-    }
-  };
 
   return (
     <div className="LabelPanel">
@@ -173,33 +163,6 @@ const LabelPanel: React.FC<LabelPanelProps> = ({ onOpenBoard, board = null }) =>
             onClick={() => onOpenBoard(boardSize)}
           >Open in editor</button>
         </div>
-      }
-
-      {corners && board &&
-        <div className="LabelPanelActions">
-          <label className="LabelPanelField">
-            Style tag{' '}
-            <input
-              type="text"
-              data-testid="label-style"
-              placeholder="newspaper"
-              value={styleTag}
-              onChange={(event) => setStyleTag(event.target.value)}
-            />
-          </label>
-          <button
-            type="button"
-            className="ScanPanelButton"
-            data-testid="label-export"
-            onClick={onExport}
-          >Export label JSON</button>
-        </div>
-      }
-
-      {exportErrors.length > 0 &&
-        <ul className="ScanPanelErrors" role="alert" data-testid="label-errors">
-          {exportErrors.map((error, index) => <li key={index}>{error}</li>)}
-        </ul>
       }
     </div>
   );
