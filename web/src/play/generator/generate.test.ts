@@ -240,3 +240,17 @@ test('generation is deterministic across a fresh RNG instance', () => {
   const random = mulberry32(hashString(seed));
   expect(random()).toBe(mulberry32(hashString(seed))());
 });
+
+// Regression snapshot of the letters generated puzzles have always had, and
+// their order. The cage alphabet now lives in cageLetters.ts, shared with the
+// editor; reordering it, or changing the order cages are assigned letters in,
+// must fail here. Literals on purpose: deriving them from CAGE_LETTERS would
+// move with the thing under test.
+test('generated cage letters match the pinned snapshot', () => {
+  const puzzle = generate('seeds-are-cheap-1', 6);
+  expect(puzzle.constraintString).toBe(
+    'a=1- b=15x c=648x d=16x e=20x f=6/ g=36x h=2- i=20x j=90x k=40x l=2/',
+  );
+  const boardLetters = [...new Set(puzzle.boardStrings.flatMap((row) => row.split(' ')))];
+  expect(boardLetters).toEqual(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']);
+});
