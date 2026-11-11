@@ -37,12 +37,17 @@ export interface ScannedBoard {
 }
 
 export interface OcrSource {
-  kind: 'synthetic' | 'photo';
+  // 'manual': a board drawn by hand with no photo behind it, so no corners.
+  kind: 'synthetic' | 'photo' | 'manual';
   seed?: string;
   styleTag?: string;
 }
 
 export interface OcrLabel extends ScannedBoard {
-  corners: Quad;
+  // Absent on a board-only label, which cannot yield photo crops.
+  corners?: Quad;
   source: OcrSource;
 }
+
+// A label known to carry its corners: a synthetic render, a scan, or a hand-labelled photo.
+export type PhotoLabel = OcrLabel & { corners: Quad };

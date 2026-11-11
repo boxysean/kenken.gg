@@ -99,4 +99,62 @@ describe('validateLabel', () => {
       'row 1, column 2 is "\u007f", which is not a printable cage letter',
     ]);
   });
+
+  describe('corners', () => {
+    const fourByFour = () => {
+      const fixture = fixtures.valid.find((candidate) => candidate.name === 'four-by-four-dominoes')!;
+      return JSON.parse(JSON.stringify(fixture.label)) as OcrLabel;
+    };
+    const QUAD = { tl: { x: 1, y: 2 }, tr: { x: 30, y: 2 }, br: { x: 30, y: 31 }, bl: { x: 1, y: 31 } };
+
+    it('accepts a board-only label with no corners key', () => {
+      const { corners: _corners, ...rest } = fourByFour();
+      const label: OcrLabel = { ...rest, source: { kind: 'manual' } };
+      expect('corners' in label).toBe(false);
+      expect(validateLabel(label)).toEqual([]);
+    });
+
+    it('accepts corners: undefined', () => {
+      expect(validateLabel({ ...fourByFour(), corners: undefined })).toEqual([]);
+    });
+
+    it('still validates a full quad', () => {
+      expect(validateLabel({ ...fourByFour(), corners: QUAD })).toEqual([]);
+    });
+
+    it('still checks the board half of a board-only label', () => {
+      const { corners: _corners, ...rest } = fourByFour();
+      const label: OcrLabel = { ...rest, source: { kind: 'manual' } };
+      label.clues = {};
+      expect(validateLabel(label).length).toBeGreaterThan(0);
+    });
+
+    it('rejects a partial quad, one error per missing corner', () => {
+      const label = { ...fourByFour(), corners: { tl: QUAD.tl, tr: QUAD.tr } } as unknown as OcrLabel;
+      expect(validateLabel(label)).toEqual([
+        'corners.br is missing or not an {x, y} point',
+        'corners.bl is missing or not an {x, y} point',
+      ]);
+    });
+
+    it('rejects a non-numeric or non-finite coordinate', () => {
+      const label = {
+        ...fourByFour(),
+        corners: { ...QUAD, tr: { x: '30', y: 2 }, bl: { x: 1, y: Number.NaN } },
+      } as unknown as OcrLabel;
+      expect(validateLabel(label)).toEqual([
+        'corners.tr is missing or not an {x, y} point',
+        'corners.bl is missing or not an {x, y} point',
+      ]);
+    });
+
+    it('rejects corners that are not an object at all', () => {
+      expect(validateLabel({ ...fourByFour(), corners: 4 } as unknown as OcrLabel)).toEqual([
+        'corners is 4, which is not a {tl, tr, br, bl} quad',
+      ]);
+      expect(validateLabel({ ...fourByFour(), corners: null } as unknown as OcrLabel)).toEqual([
+        'corners is null, which is not a {tl, tr, br, bl} quad',
+      ]);
+    });
+  });
 });

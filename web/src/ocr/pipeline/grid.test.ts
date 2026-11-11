@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { generate } from '../../play/generator/generate';
 import { distort } from '../render/distort';
 import { renderPuzzle } from '../render/synth';
-import type { OcrImage, OcrLabel } from '../types';
+import type { OcrImage, PhotoLabel } from '../types';
 import { measureStrokeWidth, readGrid } from './grid';
 import type { EdgeReading } from './grid';
 import { warpToBoard } from './warp';
@@ -24,11 +24,11 @@ const SAMPLES = [
   { name: 'kenken-6x6-perspective', boardSize: 6, distortion: { tag: 'perspective' as const, rotation: 6, perspective: 0.06 } },
 ];
 
-function loadFixture(sample: (typeof SAMPLES)[number]): { flat: OcrImage; label: OcrLabel } {
+function loadFixture(sample: (typeof SAMPLES)[number]): { flat: OcrImage; label: PhotoLabel } {
   const puzzle = generate(`synth-export-${sample.boardSize}x${sample.boardSize}`, sample.boardSize);
   const rendered = renderPuzzle(puzzle, { tag: sample.distortion.tag });
   const { image, corners } = distort(rendered.image, rendered.label.corners, { ...sample.distortion, seed: sample.name });
-  const label: OcrLabel = JSON.parse(readFileSync(`${FIXTURES}${sample.name}.json`, 'utf8'));
+  const label: PhotoLabel = JSON.parse(readFileSync(`${FIXTURES}${sample.name}.json`, 'utf8'));
   // The reconstruction must be the committed fixture: corners match the label's.
   for (const key of ['tl', 'tr', 'br', 'bl'] as const) {
     expect(Math.hypot(corners[key].x - label.corners[key].x, corners[key].y - label.corners[key].y)).toBeLessThan(1e-6);
@@ -37,7 +37,7 @@ function loadFixture(sample: (typeof SAMPLES)[number]): { flat: OcrImage; label:
 }
 
 // The label's answer for an edge: a cage wall when the letters either side differ.
-function isCageWall(label: OcrLabel, edge: EdgeReading): boolean {
+function isCageWall(label: PhotoLabel, edge: EdgeReading): boolean {
   const letters = label.cageLetters.map((row) => row.split(' '));
   return edge.dir === 'v'
     ? letters[edge.row][edge.col - 1] !== letters[edge.row][edge.col]

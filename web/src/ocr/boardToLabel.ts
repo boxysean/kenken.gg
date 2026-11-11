@@ -1,13 +1,13 @@
 // The inverse of labelToBoard's input side: wraps a board (typically the
 // editor's, after the user corrected a scan) and the detected corners into an
 // OcrLabel, the schema in README.md, so corrections can be exported as training data.
-import type { Clue, OcrLabel, OcrSource, Quad, ScannedBoard } from './types';
+import type { Clue, OcrSource, PhotoLabel, Quad, ScannedBoard } from './types';
 
 export function boardToLabel(
   board: ScannedBoard,
   corners: Quad,
   source: OcrSource = { kind: 'photo' },
-): OcrLabel {
+): PhotoLabel {
   // Fresh copies throughout: the label is serialised later, and the caller's
   // board (live editor state) must not change under it, nor it under the board.
   const clues: Record<string, Clue> = {};

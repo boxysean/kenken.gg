@@ -1,0 +1,21 @@
+/* The button and the error list reuse .ScanPanelButton and .ScanPanelErrors from ScanPanel.css. */
+.BoardExport {
+  margin: 16px 0 0;
+}
+
+.BoardExportActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.BoardExportField {
+  color: var(--ink);
+}
+
+.BoardExportReason {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+}

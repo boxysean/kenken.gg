@@ -1,0 +1,72 @@
+/* Buttons and the error list reuse .ScanPanelButton and .ScanPanelErrors from ScanPanel.css. */
+.LabelPanel {
+  margin: 16px 0 0;
+}
+
+.LabelPanel .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.LabelPanelPrompt {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Shrink-wrapped to the image, so marker percentages are percentages of the
+   image (absolute children are placed against the padding box, inside the border). */
+.LabelPanelImageWrap {
+  position: relative;
+  display: inline-block;
+  margin: 12px auto 0;
+  max-width: 100%;
+  line-height: 0;
+  border: var(--border-width) solid var(--cage-border);
+}
+
+/* No border or padding here: getBoundingClientRect must be exactly the image's pixels. */
+.LabelPanelImage {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  cursor: crosshair;
+}
+
+/* Centred on the corner; clicks pass through to the image underneath. */
+.LabelPanelMarker {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  color: var(--ink);
+  background-color: var(--brut-cyan);
+  border: 2px solid var(--cage-border);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.LabelPanelActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 0;
+}
+
+.LabelPanelField {
+  color: var(--ink);
+}

@@ -11,7 +11,7 @@ import type { PlayPuzzle } from '../../play/types';
 import { labelToBoard } from '../labelToBoard';
 import { distort } from '../render/distort';
 import { renderPuzzle } from '../render/synth';
-import type { OcrImage, OcrLabel, ScannedBoard } from '../types';
+import type { OcrImage, PhotoLabel, ScannedBoard } from '../types';
 import { deriveCages } from './cages';
 import type { DerivedCages } from './cages';
 import { warpToBoard } from './warp';
@@ -27,11 +27,11 @@ const SAMPLES = [
   { name: 'kenken-6x6-perspective', boardSize: 6, distortion: { tag: 'perspective' as const, rotation: 6, perspective: 0.06 } },
 ];
 
-function loadFixture(sample: (typeof SAMPLES)[number]): { flat: OcrImage; label: OcrLabel } {
+function loadFixture(sample: (typeof SAMPLES)[number]): { flat: OcrImage; label: PhotoLabel } {
   const puzzle = generate(`synth-export-${sample.boardSize}x${sample.boardSize}`, sample.boardSize);
   const rendered = renderPuzzle(puzzle, { tag: sample.distortion.tag });
   const { image, corners } = distort(rendered.image, rendered.label.corners, { ...sample.distortion, seed: sample.name });
-  const label: OcrLabel = JSON.parse(readFileSync(`${FIXTURES}${sample.name}.json`, 'utf8'));
+  const label: PhotoLabel = JSON.parse(readFileSync(`${FIXTURES}${sample.name}.json`, 'utf8'));
   // The reconstruction must be the committed fixture: corners match the label's.
   for (const key of ['tl', 'tr', 'br', 'bl'] as const) {
     expect(Math.hypot(corners[key].x - label.corners[key].x, corners[key].y - label.corners[key].y)).toBeLessThan(1e-6);
@@ -70,8 +70,8 @@ describe('deriveCages', () => {
   describe('on the fixture set', () => {
     // Derived once per fixture and shared by the per-image and aggregate tests;
     // loading happens inside a test so loadFixture's corner checks run there.
-    const cache = new Map<string, { label: OcrLabel; derived: DerivedCages }>();
-    function derive(sample: (typeof SAMPLES)[number]): { label: OcrLabel; derived: DerivedCages } {
+    const cache = new Map<string, { label: PhotoLabel; derived: DerivedCages }>();
+    function derive(sample: (typeof SAMPLES)[number]): { label: PhotoLabel; derived: DerivedCages } {
       let result = cache.get(sample.name);
       if (result === undefined) {
         const { flat, label } = loadFixture(sample);
@@ -123,7 +123,7 @@ describe('deriveCages', () => {
   });
 
   describe('single-cell cages', () => {
-    const fixtures = JSON.parse(labelsJson) as { valid: { name: string; label: OcrLabel }[] };
+    const fixtures = JSON.parse(labelsJson) as { valid: { name: string; label: PhotoLabel }[] };
 
     for (const { name, label } of fixtures.valid) {
       it(`${name}: a 1x1 cage yields one non-empty crop with its clue`, () => {
