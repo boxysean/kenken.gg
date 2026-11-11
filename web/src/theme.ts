@@ -4,10 +4,10 @@
 // across reloads. Storage is guarded the same way as play mode's: a missing or
 // full store must never stop the page from rendering.
 
-export const THEMES = ['brutalist', 'paper', 'blueprint', 'editorial'] as const;
+export const THEMES = ['paper', 'blueprint', 'editorial'] as const;
 export type Theme = (typeof THEMES)[number];
 
-export const DEFAULT_THEME: Theme = 'brutalist';
+export const DEFAULT_THEME: Theme = 'paper';
 export const THEME_STORAGE_KEY = 'kenken:theme:v1';
 
 export function isTheme(value: unknown): value is Theme {

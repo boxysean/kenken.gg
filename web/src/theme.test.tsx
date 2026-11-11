@@ -23,9 +23,9 @@ afterEach(() => {
 });
 
 describe('theme names', () => {
-  it('lists exactly the four themes, brutalist first', () => {
-    expect(THEMES).toEqual(['brutalist', 'paper', 'blueprint', 'editorial']);
-    expect(DEFAULT_THEME).toBe('brutalist');
+  it('lists exactly the three themes, paper first', () => {
+    expect(THEMES).toEqual(['paper', 'blueprint', 'editorial']);
+    expect(DEFAULT_THEME).toBe('paper');
   });
 
   it('normalizes known names', () => {
@@ -34,9 +34,9 @@ describe('theme names', () => {
     expect(normalizeTheme(' blueprint ')).toBe('blueprint');
   });
 
-  it('falls back to brutalist for anything else', () => {
+  it('falls back to paper for anything else', () => {
     for (const value of ['neon', '', null, undefined, 42]) {
-      expect(normalizeTheme(value)).toBe('brutalist');
+      expect(normalizeTheme(value)).toBe('paper');
     }
   });
 });
@@ -56,7 +56,7 @@ describe('themeFromQuery', () => {
   });
 
   it('turns an unknown value into the default rather than ignoring it', () => {
-    expect(themeFromQuery('?theme=bogus')).toBe('brutalist');
+    expect(themeFromQuery('?theme=bogus')).toBe('paper');
   });
 });
 
@@ -66,7 +66,7 @@ describe('resolveTheme', () => {
   });
 
   it('lets an unknown query override storage with the default', () => {
-    expect(resolveTheme('?theme=neon', 'blueprint')).toBe('brutalist');
+    expect(resolveTheme('?theme=neon', 'blueprint')).toBe('paper');
   });
 
   it('uses storage when the query is absent', () => {
@@ -75,8 +75,8 @@ describe('resolveTheme', () => {
   });
 
   it('defaults when neither is present or storage is invalid', () => {
-    expect(resolveTheme('', null)).toBe('brutalist');
-    expect(resolveTheme('', 'neon' as Theme)).toBe('brutalist');
+    expect(resolveTheme('', null)).toBe('paper');
+    expect(resolveTheme('', 'neon' as Theme)).toBe('paper');
   });
 });
 
@@ -126,8 +126,13 @@ describe('root data-theme attribute', () => {
     if (container) ReactDOM.unmountComponentAtNode(container);
   });
 
-  it('is brutalist with no parameter and nothing stored', () => {
-    expect(mount().getAttribute('data-theme')).toBe('brutalist');
+  it('is paper with no parameter and nothing stored', () => {
+    expect(mount().getAttribute('data-theme')).toBe('paper');
+  });
+
+  it('keeps a stored preference when no parameter is given', () => {
+    saveTheme('blueprint');
+    expect(mount().getAttribute('data-theme')).toBe('blueprint');
   });
 
   it('applies ?theme= and remembers it across a reload', () => {
@@ -140,9 +145,9 @@ describe('root data-theme attribute', () => {
     expect(mount().getAttribute('data-theme')).toBe('editorial');
   });
 
-  it('renders brutalist for an unknown parameter', () => {
+  it('renders paper for an unknown parameter', () => {
     window.history.replaceState({}, '', '/?theme=neon');
-    expect(mount().getAttribute('data-theme')).toBe('brutalist');
+    expect(mount().getAttribute('data-theme')).toBe('paper');
   });
 });
 
@@ -216,15 +221,40 @@ describe('theme CSS', () => {
   const darkMedia = blocks(tokens).find(
     (block) => block.prelude === '@media (prefers-color-scheme: dark)',
   );
-  const darkRoot = darkMedia === undefined ? {} : declarations(darkMedia.body, ':root');
+  if (darkMedia === undefined) throw new Error('no prefers-color-scheme: dark block');
+  const darkRoot = declarations(darkMedia.body, ':root');
+  // Paper's dark variant lives inside the media query; the alternative themes'
+  // top-level blocks come later in the cascade and override it.
+  const paperDark = declarations(darkMedia.body, '[data-theme="paper"]');
+
+  // A theme's own top-level block; paper is the base :root and has none.
+  function own(theme: Theme): Record<string, string> {
+    const prelude = `[data-theme="${theme}"]`;
+    return blocks(tokens).some((block) => block.prelude === prelude)
+      ? declarations(tokens, prelude)
+      : {};
+  }
+
+  function resolved(theme: Theme, scheme: 'light' | 'dark'): Record<string, string> {
+    if (scheme === 'light') return { ...root, ...own(theme) };
+    return { ...root, ...darkRoot, ...(theme === 'paper' ? paperDark : {}), ...own(theme) };
+  }
+
+  it('has no top-level paper block that would override its dark variant', () => {
+    expect(own('paper')).toEqual({});
+    expect(own('blueprint')).not.toEqual({});
+    expect(own('editorial')).not.toEqual({});
+  });
+
+  it('gives paper a dark variant and a cream light surface', () => {
+    expect(resolved('paper', 'dark')['--surface']).toBe('#1b1815');
+    expect(resolved('paper', 'dark')['--cage-border']).toBe('#efe7d8');
+    expect(resolved('paper', 'light')['--surface']).toBe('#fbf7ee');
+  });
 
   for (const theme of THEMES) {
-    const own = theme === 'brutalist' ? {} : declarations(tokens, `[data-theme="${theme}"]`);
-    const schemes: Array<[string, Record<string, string>]> = [
-      ['light', { ...root, ...own }],
-      ['dark', { ...root, ...darkRoot, ...own }],
-    ];
-    for (const [scheme, values] of schemes) {
+    for (const scheme of ['light', 'dark'] as const) {
+      const values = resolved(theme, scheme);
       it(`draws cage edges heavier than grid lines in ${theme} (${scheme})`, () => {
         const cage = values['--cage-border-width'];
         const grid = values['--grid-line-width'];

@@ -1,52 +1,45 @@
 /* Design tokens. Keep this block identical to the one in src/App.css. */
 /* tokens:begin */
+/* The base block is the paper theme -- a printed puzzle book. Warm, quiet, borders do no
+   decoration. The alternative themes re-declare tokens below under [data-theme="…"]. */
 :root {
   /* Gradient page background -- deliberately unchanged in this restyle. */
   --bg-top: #f6f8fc;
   --bg-bottom: #eef1f8;
-  --surface: #ffffff;
-  --ink: #0f172a;
-  --ink-soft: #475569;
-  --hairline: #cbd5e1;
-  --grid-line: #cbd5e1;
-  --cage-border: #0f172a;
-  --accent: #2447f0;
+  --surface: #fbf7ee;
+  --ink: #1c1a17;
+  --ink-soft: #57514a;
+  --hairline: #d8cfc0;
+  --grid-line: #b9ae9c;
+  --cage-border: #1c1a17;
+  --accent: #a4262c;
   --accent-ink: #ffffff;
-  /* Flat selection fill (formerly a soft tint) -- black text on top of it. */
-  --accent-soft: #ffd447;
-  --selected-ink: #0f172a;
-  --cage-fill: #f1f5f9;
-  --constraint-ink: #334155;
-  /* State colours are flat saturated blocks with near-black text, not pastels. */
-  --success-ink: #0f172a;
-  --success-bg: #a6f4a6;
-  --failure-ink: #0f172a;
-  --failure-bg: #ff6b6b;
-  --neutral-ink: #0f172a;
-  --neutral-bg: #7ce7e1;
-  /* The brutalist palette. */
-  --brut-yellow: #ffd447;
-  --brut-pink: #ff90b3;
-  --brut-cyan: #7ce7e1;
-  --brut-green: #a6f4a6;
-  --brut-red: #ff6b6b;
-  /* Hard offset shadows. No blur anywhere, ever. */
-  --shadow-card: 6px 6px 0 var(--cage-border);
-  --shadow-control: 4px 4px 0 var(--cage-border);
-  --shadow-press: 2px 2px 0 var(--cage-border);
-  --radius-card: 0;
-  --radius-control: 0;
-  --border-width: 3px;
+  --accent-soft: #e8d9c3;
+  --selected-ink: #1c1a17;
+  --cage-fill: #f1e8d8;
+  --constraint-ink: #1c1a17;
+  --success-ink: #1c1a17;
+  --success-bg: #cfe0c4;
+  --failure-ink: #1c1a17;
+  --failure-bg: #f0c9c6;
+  --neutral-ink: #1c1a17;
+  --neutral-bg: #e8d9c3;
+  --shadow-card: none;
+  --shadow-control: none;
+  --shadow-press: none;
+  --radius-card: 2px;
+  --radius-control: 2px;
+  --border-width: 1px;
   /* Text that sits on the page gradient rather than on a card surface: it must follow
      the colour scheme, not the theme's surface. Themes deliberately do not redeclare these. */
   --page-ink: #0f172a;
   --page-ink-soft: #475569;
   --page-accent: #2447f0;
   /* Cage edges must always read heavier than the cell grid, in every theme. */
-  --cage-border-width: 3px;
+  --cage-border-width: 2px;
   --grid-line-width: 1px;
-  /* The clue-numeral face. Only `paper` and `blueprint` change it. */
-  --clue-font: "Baloo 2", var(--font-sans);
+  /* The clue-numeral face. */
+  --clue-font: Georgia, "Times New Roman", serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   color-scheme: light dark;
@@ -74,47 +67,42 @@
     --failure-bg: #ff6b6b;
     --neutral-ink: #0f172a;
     --neutral-bg: #7ce7e1;
-    --shadow-card: 6px 6px 0 var(--cage-border);
-    --shadow-control: 4px 4px 0 var(--cage-border);
-    --shadow-press: 2px 2px 0 var(--cage-border);
     --page-ink: #f5f5f5;
     --page-ink-soft: #a8b3c4;
     --page-accent: #8aa0ff;
   }
-}
 
-/* Theme: brutalist -- the default. The :root block above is this theme; it needs no block. */
-
-/* Theme: paper -- a printed puzzle book. Warm, quiet, borders do no decoration. */
-[data-theme="paper"] {
-  --surface: #fbf7ee;
-  --ink: #1c1a17;
-  --ink-soft: #57514a;
-  --hairline: #d8cfc0;
-  --grid-line: #b9ae9c;
-  --cage-border: #1c1a17;
-  --accent: #a4262c;
-  --accent-ink: #ffffff;
-  --accent-soft: #e8d9c3;
-  --selected-ink: #1c1a17;
-  --cage-fill: #f1e8d8;
-  --constraint-ink: #1c1a17;
-  --success-ink: #1c1a17;
-  --success-bg: #cfe0c4;
-  --failure-ink: #1c1a17;
-  --failure-bg: #f0c9c6;
-  --neutral-ink: #1c1a17;
-  --neutral-bg: #e8d9c3;
-  --shadow-card: none;
-  --shadow-control: none;
-  --shadow-press: none;
-  --radius-card: 2px;
-  --radius-control: 2px;
-  --border-width: 1px;
-  --cage-border-width: 2px;
-  --grid-line-width: 1px;
-  --clue-font: Georgia, "Times New Roman", serif;
-  --brut-cyan: #e8d9c3;
+  /* Paper follows the colour scheme: a warm dark sheet, not a cream card on a dark page.
+     Blueprint and editorial are fixed palettes; their blocks below override this either way. */
+  [data-theme="paper"] {
+    --surface: #1b1815;
+    --ink: #efe7d8;
+    --ink-soft: #b9ad99;
+    --hairline: #3a332b;
+    --grid-line: #4a4238;
+    --cage-border: #efe7d8;
+    --accent: #d4625a;
+    --accent-ink: #141110;
+    --accent-soft: #3a2a28;
+    --selected-ink: #efe7d8;
+    --cage-fill: #241f1a;
+    --constraint-ink: #efe7d8;
+    --success-ink: #efe7d8;
+    --success-bg: #2f3f2a;
+    --failure-ink: #efe7d8;
+    --failure-bg: #4a2422;
+    --neutral-ink: #efe7d8;
+    --neutral-bg: #3a2a28;
+    --shadow-card: none;
+    --shadow-control: none;
+    --shadow-press: none;
+    --radius-card: 2px;
+    --radius-control: 2px;
+    --border-width: 1px;
+    --cage-border-width: 2px;
+    --grid-line-width: 1px;
+    --clue-font: Georgia, "Times New Roman", serif;
+  }
 }
 
 /* Theme: blueprint -- a technical drawing. Thin white and cyan lines on drafting blue. */
@@ -146,7 +134,6 @@
   --cage-border-width: 2px;
   --grid-line-width: 1px;
   --clue-font: var(--font-mono);
-  --brut-cyan: #1d4a72;
 }
 
 /* Theme: editorial -- a high-contrast print magazine. Type does the work. */
@@ -178,7 +165,6 @@
   --cage-border-width: 3px;
   --grid-line-width: 1px;
   --clue-font: "Baloo 2", var(--font-sans);
-  --brut-cyan: #ffe1e4;
 }
 /* tokens:end */
 

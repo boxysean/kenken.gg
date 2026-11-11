@@ -40,7 +40,7 @@
   font-size: 1rem;
   font-weight: 700;
   color: var(--ink);
-  background-color: var(--brut-cyan);
+  background-color: var(--accent-soft);
   border: var(--border-width) solid var(--cage-border);
   border-radius: var(--radius-control);
   box-shadow: var(--shadow-control);
