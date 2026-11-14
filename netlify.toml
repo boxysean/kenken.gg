@@ -15,7 +15,7 @@
 [build.environment]
   # Keep this equal to the `node-version` in .github/workflows/test.yaml, so the
   # code Netlify builds is the code CI tested. Bumping it is a deliberate change.
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
   NPM_FLAGS    = "--no-audit --no-fund"
 
 # Vite fingerprints every asset under /assets/, so a given file name never

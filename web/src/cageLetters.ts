@@ -1,4 +1,4 @@
-// The alphabet cage names are drawn from, shared by the board editor (App.js),
+// The alphabet cage names are drawn from, shared by the board editor (App.jsx),
 // the generator and OCR label validation. It lives in exactly one place so the
 // three cannot drift: a name the editor hands out is one the generator could
 // have produced and one validateLabel accepts.

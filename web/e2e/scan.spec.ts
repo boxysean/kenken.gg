@@ -18,7 +18,7 @@ interface CellState {
   borderBottom: boolean;
 }
 
-// What the solver editor (components/Board.js + Cell.js) draws for a board once
+// What the solver editor (components/Board.jsx + Cell.jsx) draws for a board once
 // App.loadBoard has taken it: the outer frame is always bordered, an inner edge
 // is bordered iff the neighbour is in another cage, and each cage's raw formula
 // ("12x", "2-", "3" for a constant) sits on its first cell in row-major order.
