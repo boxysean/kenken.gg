@@ -1,4 +1,4 @@
-/* Solver / Play switch rendered by App.js. It lives here rather than in
+/* Solver / Play switch rendered by App.jsx. It lives here rather than in
    App.css so the solver's stylesheet stays exactly as it was. */
 .ModeToggle {
   display: inline-flex;

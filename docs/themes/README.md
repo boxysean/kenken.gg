@@ -18,7 +18,7 @@ rather than throwing.
 The styling is token-driven, so a theme is a re-declaration of token values, not a rewrite of
 component CSS:
 
-- `src/theme.ts` resolves the theme (query → storage → default) and `src/App.js` puts it on the
+- `src/theme.ts` resolves the theme (query → storage → default) and `src/App.jsx` puts it on the
   root element as `data-theme="<name>"`, next to the existing `data-solve-state`.
 - `src/App.css` and `public/main.css` each hold the same token region, delimited by
   `/* tokens:begin */` and `/* tokens:end */`: the `:root` block (which *is* paper's light

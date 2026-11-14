@@ -9,7 +9,7 @@
 }
 
 .Tooltip {
-  /* background-color comes inline from App.js TOOLTIP_COLOR; the state rules below
+  /* background-color comes inline from App.jsx TOOLTIP_COLOR; the state rules below
      override it with token colours (so the dark theme gets its own surfaces). */
   max-width: calc(100% - 48px);
   padding: 12px 20px;

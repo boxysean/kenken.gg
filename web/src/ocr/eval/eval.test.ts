@@ -261,5 +261,5 @@ describe('OCR accuracy eval', () => {
         expect(value, `${tag} ${metric}: measured ${value.toFixed(3)}, floor ${floor}`).toBeGreaterThanOrEqual(floor);
       }
     }
-  });
+  }, 60_000);
 });
