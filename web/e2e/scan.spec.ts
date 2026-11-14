@@ -59,9 +59,7 @@ for (const name of names) {
   test(`${name} scans into the editor exactly`, async ({ page }) => {
     const expected: ScannedBoard = JSON.parse(readFileSync(`${SAMPLES}${name}.expected.json`, 'utf8'));
 
-    await page.goto('/');
-    const solverToggle = page.getByTestId('mode-toggle-solver');
-    if ((await solverToggle.getAttribute('aria-pressed')) !== 'true') await solverToggle.click();
+    await page.goto('/?mode=label');
 
     // The model really loaded: a silent fallback to the template reader fails here.
     await expect(page.locator('.ScanPanel')).toHaveAttribute('data-reader', 'onnx', { timeout: 30_000 });

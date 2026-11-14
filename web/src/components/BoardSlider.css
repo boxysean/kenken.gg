@@ -5,7 +5,7 @@
 
 /* BoardSlider renders <div><p><input type="range"> Board Size: N</p></div>;
    style that paragraph as one labelled control without touching the markup. */
-.App > div > p:has(> input[type="range"]) {
+.ModePanel > div > p:has(> input[type="range"]) {
   display: inline-flex;
   align-items: center;
   gap: 12px;

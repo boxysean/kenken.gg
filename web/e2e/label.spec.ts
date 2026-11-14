@@ -30,14 +30,12 @@ const OPERATOR_BUTTON: Record<string, string> = {
 // A phone-width viewport shrinks it under max-width: 100%.
 test.use({ viewport: { width: 375, height: 812 } });
 
-async function openSolver(page: Page) {
-  await page.goto('/');
-  const solverToggle = page.getByTestId('mode-toggle-solver');
-  if ((await solverToggle.getAttribute('aria-pressed')) !== 'true') await solverToggle.click();
+async function openLabel(page: Page) {
+  await page.goto('/?mode=label');
 }
 
 async function openPhoto(page: Page) {
-  await openSolver(page);
+  await openLabel(page);
 
   await page.setInputFiles('[data-testid="label-input"]', PHOTO);
   const image = page.getByTestId('label-image');
@@ -186,7 +184,7 @@ test('a half-drawn board is refused, not downloaded', async ({ page }) => {
 });
 
 test('a board drawn by hand, with no photo at all, exports as kenken-board.json', async ({ page }) => {
-  await openSolver(page);
+  await openLabel(page);
   await expect(page.getByTestId('label-image')).toHaveCount(0);
   const exportButton = page.getByTestId('export-button');
   await expect(exportButton).toBeDisabled();

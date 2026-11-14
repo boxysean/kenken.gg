@@ -38,8 +38,8 @@ for (const image of images) {
   const rec = { image: basename(image), file: image };
   try {
     await page.goto(BASE, { waitUntil: 'load' });
-    const solverToggle = page.getByTestId('mode-toggle-solver');
-    if ((await solverToggle.getAttribute('aria-pressed')) !== 'true') await solverToggle.click();
+    const labelToggle = page.getByTestId('mode-toggle-label');
+    if ((await labelToggle.getAttribute('aria-selected')) !== 'true') await labelToggle.click();
     // The model must really be loaded: a silent fallback to the template reader fails here.
     await page.locator('.ScanPanel').waitFor({ state: 'visible', timeout: 30_000 });
     await page.waitForFunction(

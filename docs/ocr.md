@@ -12,8 +12,8 @@ npm ci
 npm run dev
 ```
 
-Open the URL Vite prints (`http://localhost:5173/` by default) and pick **Solver** in the mode
-toggle. The **Scan a photo** button sits under the board.
+Open the URL Vite prints (`http://localhost:5173/` by default) and pick **Label** in the mode
+tabs (or open `/?mode=label` directly). The **Scan a photo** button sits above the board.
 
 ## The 4×4 clean fixture
 
@@ -33,9 +33,9 @@ toggle. The **Scan a photo** button sits under the board.
    ```
 
    (`boardStrings` / `constraintString` exactly as in `kenken-4x4-clean.json`.) The editor is
-   back in its drawing state: answers cleared, **Solve!** enabled. Any cage can be redrawn and
-   any clue retyped as usual before solving.
-4. Click **Export JSON**, the solver view's one export control (it sits under the photo panels
+   back in its drawing state: answers cleared. Any cage can be redrawn and any clue retyped as
+   usual before exporting.
+4. Click **Export JSON**, the label view's one export control (it sits under the editor board
    and is there with or without a photo; see [The export control](#the-export-control)). A
    successful scan hands its corners to it, so the browser saves `kenken-label.json`:
 
@@ -175,7 +175,7 @@ measured, until the fix that makes it pass lands with it.
 ## Labelling a photo the scanner cannot read
 
 Corner detection fails on most real photos, so a label can be made by hand instead. In the
-**Solver** view, under **Scan a photo**:
+**Label** view, under **Scan a photo**:
 
 1. Click **Label a photo** and choose the image. The prompt above it names the next corner.
 2. Click the board's four corners in order: top-left, top-right, bottom-right, bottom-left.
@@ -195,7 +195,7 @@ until all four are marked. `web/e2e/label.spec.ts` drives this whole path in Chr
 
 ## The export control
 
-The solver view has one **Export JSON** button, under the photo panels. It is always there,
+The label view has one **Export JSON** button, under the editor board. It is always there,
 photo or not, and is disabled — with "Draw at least one cage on the board to export it." under
 it — only while the editor board is empty. It exports the **editor's current board**, and saves
 one of two files:

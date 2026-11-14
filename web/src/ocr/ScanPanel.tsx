@@ -1,7 +1,7 @@
 // "Scan a photo", end to end: the picker (ScanButton) fills the ingest store,
 // this panel runs the recognition pipeline on whatever lands there, summarises
 // what it found, and offers to load the board into the editor. The detected
-// corners go up through onCorners, so the solver view's export control
+// corners go up through onCorners, so the label view's export control
 // (BoardExport) can save the corrected board plus those corners as a label.
 import React, { useEffect, useRef, useState } from 'react';
 import type { OcrImage, Quad, ScannedBoard } from './types';
