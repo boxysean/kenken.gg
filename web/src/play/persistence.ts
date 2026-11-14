@@ -2,6 +2,8 @@
 // hold anything a previous build wrote, so every access is guarded and every
 // read is validated: failing to persist must never break play.
 import type { PlayPuzzle } from './types';
+import { isMode } from '../mode';
+import type { Mode } from '../mode';
 
 export const KEY_DAILY = 'kenken:daily:v1';
 export const KEY_PREFS = 'kenken:prefs:v1';
@@ -21,7 +23,7 @@ export interface DailySave {
 
 export interface Prefs {
   lastPracticeSize: number;
-  mode: 'solver' | 'play';
+  mode: Mode;
 }
 
 const DEFAULT_PREFS: Prefs = { lastPracticeSize: 5, mode: 'solver' };
@@ -84,7 +86,7 @@ export function loadPrefs(): Prefs {
     lastPracticeSize: isIntIn(parsed.lastPracticeSize, MIN_SIZE, MAX_SIZE)
       ? parsed.lastPracticeSize
       : DEFAULT_PREFS.lastPracticeSize,
-    mode: parsed.mode === 'play' || parsed.mode === 'solver' ? parsed.mode : DEFAULT_PREFS.mode,
+    mode: isMode(parsed.mode) ? parsed.mode : DEFAULT_PREFS.mode,
   };
 }
 

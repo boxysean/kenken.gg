@@ -1,4 +1,4 @@
-// The solver view's one export control, there whether or not a photo is in
+// The label view's one export control, there whether or not a photo is in
 // play. With corners (from a scan, or four clicks in LabelPanel) it saves a
 // full label, kenken-label.json; without, the board alone, kenken-board.json.
 // Either way the file goes through validateLabel first and nothing is saved

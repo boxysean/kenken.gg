@@ -1,7 +1,7 @@
 // "Label a photo", by hand: the scanner's corner detection fails on most real
 // photos, so the user clicks the board's four corners instead and draws the
 // cages in the editor as usual. The corners go up through onCorners, so the
-// solver view's export control (BoardExport) can save the editor board plus
+// label view's export control (BoardExport) can save the editor board plus
 // those corners as an OcrLabel. The corners live here, not in the editor, so
 // opening an empty board of the right size does not lose them.
 import React, { useEffect, useRef, useState } from 'react';

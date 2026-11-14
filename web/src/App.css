@@ -205,6 +205,16 @@
   color: var(--page-ink);
 }
 
+/* The active mode's view. It lays its children out the way .App does, so the
+   views look as they did before they were wrapped in a tabpanel. */
+.ModePanel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 /* About link (the last paragraph in the app) */
 .App > p:last-child {
   margin: 8px 0 0;
@@ -233,7 +243,7 @@
 }
 
 /* ?debug=true overlay */
-.App > ul {
+.ModePanel > ul {
   box-sizing: border-box;
   width: min(92vw, 520px);
   margin: 8px 0 0;

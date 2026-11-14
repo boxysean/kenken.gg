@@ -19,8 +19,11 @@ import BoardExport from './ocr/BoardExport';
 import { nextCageLetter } from './cageLetters';
 import { loadPrefs, savePrefs } from './play/persistence';
 import { loadStoredTheme, resolveTheme, saveTheme } from './theme';
+import { MODES, resolveMode, writeModeToUrl } from './mode';
 
 import update from 'immutability-helper';
+
+const MODE_LABELS = { solver: 'Solver', play: 'Play', label: 'Label' };
 
 class App extends React.Component {
   DEFAULT_STATE = {
@@ -49,11 +52,14 @@ class App extends React.Component {
     this.TOOLTIP_COLOR[SolveLifecycle.Failure] = "rgba(254, 226, 226, 0.95)";
     this.TOOLTIP_COLOR[SolveLifecycle.Inputting] = "rgba(226, 232, 240, 0.95)";
 
+    this.modeTabs = {};
+
     this.state = {
       boardSize: 5,
       showTooltip: true,
       debugOverlay: window.location.href.includes("debug=true"),
-      mode: loadPrefs().mode,
+      // An explicit ?mode= wins over the remembered one, as ?theme= does.
+      mode: resolveMode(window.location.search, loadPrefs().mode),
       // Not in DEFAULT_STATE, so reset() leaves the theme alone.
       theme: resolveTheme(window.location.search, loadStoredTheme()),
       ...this.DEFAULT_STATE,
@@ -215,6 +221,38 @@ class App extends React.Component {
     });
 
     savePrefs({ ...loadPrefs(), mode: mode });
+
+    // Replace rather than push, so the back button does not step through tabs.
+    const location = window.location;
+    window.history.replaceState(
+      window.history.state,
+      '',
+      location.pathname + writeModeToUrl(mode, location.search) + location.hash
+    );
+  }
+
+  // Arrow keys, Home and End move between the mode tabs (wrapping); moving
+  // selects, and focus follows the selection.
+  processModeKeyDown(event) {
+    const index = MODES.indexOf(this.state.mode);
+    let next;
+    if (event.key === 'ArrowRight') {
+      next = (index + 1) % MODES.length;
+    } else if (event.key === 'ArrowLeft') {
+      next = (index - 1 + MODES.length) % MODES.length;
+    } else if (event.key === 'Home') {
+      next = 0;
+    } else if (event.key === 'End') {
+      next = MODES.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    const mode = MODES[next];
+    this.changeMode(mode);
+    if (this.modeTabs[mode]) {
+      this.modeTabs[mode].focus();
+    }
   }
 
   canSubmit() {
@@ -311,7 +349,9 @@ class App extends React.Component {
     });
   }
 
-  renderSolver() {
+  // The board editor, shared by Solver (to draw a puzzle to solve) and Label
+  // (to draw or correct the cages of a photographed one).
+  renderEditor() {
     return (
       <>
         <BoardSlider
@@ -345,6 +385,14 @@ class App extends React.Component {
 
           <LoadingSpinner showSpinner={this.state.solveLifecycle === SolveLifecycle.Pending} />
         </Board>
+      </>
+    );
+  }
+
+  renderSolver() {
+    return (
+      <>
+        {this.renderEditor()}
 
         {this.state.solveLifecycle !== SolveLifecycle.Success &&
           <SolveButton
@@ -359,10 +407,6 @@ class App extends React.Component {
           ></ClearButton>
         }
 
-        <ScanPanel onLoadBoard={this.loadBoard.bind(this)} onCorners={this.setCorners.bind(this)} />
-        <LabelPanel onOpenBoard={this.loadEmptyBoard.bind(this)} onCorners={this.setCorners.bind(this)} />
-        <BoardExport board={this.currentBoard()} corners={this.state.corners} />
-
         {this.state.debugOverlay &&
           <ul>
             <li>Can Submit? {this.canSubmit() ? "yes!" : "no"}</li>
@@ -375,6 +419,29 @@ class App extends React.Component {
         }
       </>
     );
+  }
+
+  // Capturing a puzzle for the training set: scan or open a photo, fix the
+  // cages in the editor, export.
+  renderLabel() {
+    return (
+      <>
+        <ScanPanel onLoadBoard={this.loadBoard.bind(this)} onCorners={this.setCorners.bind(this)} />
+        <LabelPanel onOpenBoard={this.loadEmptyBoard.bind(this)} onCorners={this.setCorners.bind(this)} />
+        {this.renderEditor()}
+        <BoardExport board={this.currentBoard()} corners={this.state.corners} />
+      </>
+    );
+  }
+
+  renderMode() {
+    if (this.state.mode === 'play') {
+      return <PlayApp />;
+    }
+    if (this.state.mode === 'label') {
+      return this.renderLabel();
+    }
+    return this.renderSolver();
   }
 
   render() {
@@ -393,24 +460,37 @@ class App extends React.Component {
 
         <h1 className="Title">kenken.gg</h1>
 
-        <div className="ModeToggle" role="group" aria-label="Mode">
-          <button
-            type="button"
-            className="ModeToggleButton"
-            data-testid="mode-toggle-solver"
-            aria-pressed={this.state.mode === 'solver'}
-            onClick={() => this.changeMode('solver')}
-          >Solver</button>
-          <button
-            type="button"
-            className="ModeToggleButton"
-            data-testid="mode-toggle-play"
-            aria-pressed={this.state.mode === 'play'}
-            onClick={() => this.changeMode('play')}
-          >Play</button>
+        <div
+          className="ModeToggle"
+          role="tablist"
+          aria-label="Mode"
+          onKeyDown={(event) => this.processModeKeyDown(event)}
+        >
+          {MODES.map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              role="tab"
+              className="ModeToggleButton"
+              id={'mode-tab-' + mode}
+              data-testid={'mode-toggle-' + mode}
+              aria-selected={this.state.mode === mode}
+              aria-controls={'mode-panel-' + mode}
+              tabIndex={this.state.mode === mode ? 0 : -1}
+              ref={(element) => { this.modeTabs[mode] = element; }}
+              onClick={() => this.changeMode(mode)}
+            >{MODE_LABELS[mode]}</button>
+          ))}
         </div>
 
-        {this.state.mode === 'play' ? <PlayApp /> : this.renderSolver()}
+        <div
+          className="ModePanel"
+          role="tabpanel"
+          id={'mode-panel-' + this.state.mode}
+          aria-label={MODE_LABELS[this.state.mode]}
+        >
+          {this.renderMode()}
+        </div>
 
         <p><a href="/about.html">About</a></p>
       </div>
