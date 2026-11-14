@@ -6,6 +6,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { act } from 'react-dom/test-utils';
+import type { Mock } from 'vitest';
 import LabelPanel from './LabelPanel';
 import type { LabelPanelProps } from './LabelPanel';
 import type { Point, Quad } from './types';
@@ -22,7 +23,7 @@ const CORNERS: Quad = {
 };
 
 let container: HTMLDivElement;
-let revokeObjectURL: ReturnType<typeof vi.fn<[string], void>>;
+let revokeObjectURL: Mock<(url: string) => void>;
 
 function byTestId(id: string): HTMLElement | null {
   return container.querySelector(`[data-testid="${id}"]`);
@@ -76,7 +77,7 @@ beforeEach(() => {
   document.body.appendChild(container);
   let next = 0;
   const createObjectURL = vi.fn(() => `blob:fake-${++next}`);
-  revokeObjectURL = vi.fn<[string], void>();
+  revokeObjectURL = vi.fn<(url: string) => void>();
   vi.stubGlobal('URL', class extends URL {
     static createObjectURL = createObjectURL;
     static revokeObjectURL = revokeObjectURL;

@@ -1,5 +1,5 @@
 .BoardContainer {
-  /* --board-size is set inline from Board.js */
+  /* --board-size is set inline from Board.jsx */
   --board-width: min(92vw, 520px);
   --cell-size: calc(var(--board-width) / var(--board-size, 5));
 
