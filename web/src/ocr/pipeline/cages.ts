@@ -7,6 +7,7 @@
 //
 // Clues are left empty here: reading the crops' text is a later stage.
 import type { Clue, OcrImage, ScannedBoard } from '../types';
+import { clearLineRemnants } from './clueCrop';
 import { readGrid } from './grid';
 import type { EdgeReading } from './grid';
 
@@ -61,7 +62,7 @@ export function cropClue(flat: OcrImage, lineX: readonly number[], lineY: readon
   const pitchY = lineY[row + 1] - lineY[row];
   const x0 = Math.max(0, Math.round(lineX[col] + CROP_INSET * pitchX));
   const y0 = Math.max(0, Math.round(lineY[row] + CROP_INSET * pitchY));
-  return cropImage(flat, x0, y0, Math.round(CROP_WIDTH * pitchX), Math.round(CROP_HEIGHT * pitchY));
+  return clearLineRemnants(cropImage(flat, x0, y0, Math.round(CROP_WIDTH * pitchX), Math.round(CROP_HEIGHT * pitchY)));
 }
 
 export function deriveCages(flat: OcrImage, label?: ScannedBoard): DerivedCages {

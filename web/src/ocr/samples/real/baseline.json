@@ -6,7 +6,7 @@
     "gridSize": 1,
     "edgeAccuracy": 1,
     "partition": 1,
-    "clueAccuracy": 0,
+    "clueAccuracy": 0.176,
     "scanSolved": 0
   },
   "photo-02": {
@@ -16,7 +16,7 @@
     "gridSize": 1,
     "edgeAccuracy": 0.33,
     "partition": 0,
-    "clueAccuracy": 0,
+    "clueAccuracy": 0.037,
     "scanSolved": 0
   },
   "photo-03": {
@@ -26,7 +26,7 @@
     "gridSize": 1,
     "edgeAccuracy": 1,
     "partition": 1,
-    "clueAccuracy": 0,
+    "clueAccuracy": 0.286,
     "scanSolved": 0
   }
 }
