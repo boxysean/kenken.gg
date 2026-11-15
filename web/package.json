@@ -27,7 +27,10 @@
     "test:e2e": "playwright test",
     "samples:export": "tsx scripts/export-samples.ts",
     "ocr:export-crops": "tsx scripts/export-crops.ts",
-    "ocr:baseline": "tsx scripts/ocr-baseline.ts"
+    "ocr:baseline": "tsx scripts/ocr-baseline.ts",
+    "real:ingest": "tsx scripts/real-ingest.ts",
+    "real:overlay": "tsx scripts/real-overlay.ts",
+    "real:report": "vitest run src/ocr/samples/real/real.test.ts"
   },
   "browserslist": {
     "production": [

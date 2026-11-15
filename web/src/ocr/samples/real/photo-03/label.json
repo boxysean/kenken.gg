@@ -1,0 +1,148 @@
+{
+  "boardSize": 8,
+  "cageLetters": [
+    "a b b n o o B B",
+    "a c c n p o o B",
+    "d d m m p v w w",
+    "e e e l q v x w",
+    "f j k l q u x z",
+    "f j k k r u y z",
+    "g h h h r t y A",
+    "g i i s s t t A"
+  ],
+  "clues": {
+    "a": {
+      "target": 2,
+      "operator": "-"
+    },
+    "b": {
+      "target": 1,
+      "operator": "-"
+    },
+    "n": {
+      "target": 3,
+      "operator": "/"
+    },
+    "o": {
+      "target": 144,
+      "operator": "x"
+    },
+    "B": {
+      "target": 32,
+      "operator": "x"
+    },
+    "c": {
+      "target": 2,
+      "operator": "-"
+    },
+    "p": {
+      "target": 6,
+      "operator": "+"
+    },
+    "d": {
+      "target": 11,
+      "operator": "+"
+    },
+    "m": {
+      "target": 8,
+      "operator": "x"
+    },
+    "v": {
+      "target": 3,
+      "operator": "/"
+    },
+    "w": {
+      "target": 12,
+      "operator": "+"
+    },
+    "e": {
+      "target": 15,
+      "operator": "+"
+    },
+    "l": {
+      "target": 1,
+      "operator": "-"
+    },
+    "q": {
+      "target": 28,
+      "operator": "x"
+    },
+    "x": {
+      "target": 8,
+      "operator": "x"
+    },
+    "f": {
+      "target": 3,
+      "operator": "/"
+    },
+    "j": {
+      "target": 5,
+      "operator": "-"
+    },
+    "k": {
+      "target": 36,
+      "operator": "x"
+    },
+    "u": {
+      "target": 2,
+      "operator": "-"
+    },
+    "z": {
+      "target": 2,
+      "operator": "/"
+    },
+    "r": {
+      "target": 5,
+      "operator": "-"
+    },
+    "y": {
+      "target": 14,
+      "operator": "x"
+    },
+    "g": {
+      "target": 3,
+      "operator": "/"
+    },
+    "h": {
+      "target": 224,
+      "operator": "x"
+    },
+    "t": {
+      "target": 14,
+      "operator": "+"
+    },
+    "A": {
+      "target": 12,
+      "operator": "+"
+    },
+    "i": {
+      "target": 1,
+      "operator": "-"
+    },
+    "s": {
+      "target": 7,
+      "operator": "+"
+    }
+  },
+  "corners": {
+    "tl": {
+      "x": 274,
+      "y": 177
+    },
+    "tr": {
+      "x": 837,
+      "y": 178
+    },
+    "br": {
+      "x": 830,
+      "y": 740
+    },
+    "bl": {
+      "x": 276,
+      "y": 742
+    }
+  },
+  "source": {
+    "kind": "photo"
+  }
+}

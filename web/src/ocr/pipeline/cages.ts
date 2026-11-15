@@ -7,6 +7,7 @@
 //
 // Clues are left empty here: reading the crops' text is a later stage.
 import type { Clue, OcrImage, ScannedBoard } from '../types';
+import { clearLineRemnants } from './clueCrop';
 import { readGrid } from './grid';
 import type { EdgeReading } from './grid';
 
@@ -53,6 +54,17 @@ function cropImage(image: OcrImage, x0: number, y0: number, width: number, heigh
   return { width: w, height: h, data };
 }
 
+// The clue crop of the cell at (row, col), given the grid-line positions. Also
+// used to cut crops along a known partition (the real-photo eval), where the
+// lines are the ideal lattice rather than detected ones.
+export function cropClue(flat: OcrImage, lineX: readonly number[], lineY: readonly number[], row: number, col: number): OcrImage {
+  const pitchX = lineX[col + 1] - lineX[col];
+  const pitchY = lineY[row + 1] - lineY[row];
+  const x0 = Math.max(0, Math.round(lineX[col] + CROP_INSET * pitchX));
+  const y0 = Math.max(0, Math.round(lineY[row] + CROP_INSET * pitchY));
+  return clearLineRemnants(cropImage(flat, x0, y0, Math.round(CROP_WIDTH * pitchX), Math.round(CROP_HEIGHT * pitchY)));
+}
+
 export function deriveCages(flat: OcrImage, label?: ScannedBoard): DerivedCages {
   const grid = readGrid(flat);
   const n = grid.boardSize;
@@ -92,15 +104,7 @@ export function deriveCages(flat: OcrImage, label?: ScannedBoard): DerivedCages 
         letter = CAGE_LETTERS[letterOfRoot.size];
         letterOfRoot.set(root, letter);
 
-        const pitchX = lineX[col + 1] - lineX[col];
-        const pitchY = lineY[row + 1] - lineY[row];
-        const x0 = Math.max(0, Math.round(lineX[col] + CROP_INSET * pitchX));
-        const y0 = Math.max(0, Math.round(lineY[row] + CROP_INSET * pitchY));
-        const crop: ClueCrop = {
-          letter,
-          crop: cropImage(flat, x0, y0, Math.round(CROP_WIDTH * pitchX), Math.round(CROP_HEIGHT * pitchY)),
-          topLeftCell: { row, col },
-        };
+        const crop: ClueCrop = { letter, crop: cropClue(flat, lineX, lineY, row, col), topLeftCell: { row, col } };
         // Looked up by cell, not by letter, so it holds whatever the label calls the cage.
         if (label !== undefined) crop.expected = label.clues[label.cageLetters[row].split(' ')[col]];
         clueCrops.push(crop);

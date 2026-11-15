@@ -139,3 +139,75 @@ describe('detectCorners on degenerate input', () => {
     expect(detection.confidence).toBe(0);
   });
 });
+
+// Phone photos break a global threshold in ways a clean render never does.
+// Each case here composes a rendered board into a scene that reproduces one of
+// them, with the board's true corners known from the composition.
+describe('detectCorners on photo-like scenes', () => {
+  const PAPER = 235;
+
+  function canvas(width: number, height: number, grey = PAPER): OcrImage {
+    const data = new Uint8ClampedArray(width * height * 4).fill(grey);
+    for (let index = 3; index < data.length; index += 4) data[index] = 255;
+    return { width, height, data };
+  }
+
+  function fillRect(image: OcrImage, x0: number, y0: number, w: number, h: number, grey: number): void {
+    for (let y = y0; y < y0 + h; y++) {
+      for (let x = x0; x < x0 + w; x++) {
+        const offset = (y * image.width + x) * 4;
+        image.data[offset] = image.data[offset + 1] = image.data[offset + 2] = grey;
+      }
+    }
+  }
+
+  // Pastes a rendered board at (ox, oy) and returns its corners in the scene.
+  function pasteBoard(scene: OcrImage, seed: string, boardSize: number, ox: number, oy: number): Quad {
+    const rendered = renderPuzzle(generate(seed, boardSize));
+    const { image, label } = rendered;
+    for (let y = 0; y < image.height; y++) {
+      for (let x = 0; x < image.width; x++) {
+        const from = (y * image.width + x) * 4;
+        const to = ((y + oy) * scene.width + (x + ox)) * 4;
+        for (let k = 0; k < 3; k++) scene.data[to + k] = image.data[from + k];
+      }
+    }
+    const shift = (p: Point): Point => ({ x: p.x + ox, y: p.y + oy });
+    const c = label.corners;
+    return { tl: shift(c.tl), tr: shift(c.tr), br: shift(c.br), bl: shift(c.bl) };
+  }
+
+  it('picks the grid over a larger dark background region (photo-02: a room behind the page)', () => {
+    const scene = canvas(900, 900);
+    const corners = pasteBoard(scene, 'scene-room', 4, 60, 420);
+    // A dark block with far more pixels than the grid's ink, clear of the page.
+    fillRect(scene, 500, 0, 380, 380, 40);
+    const detection = detectCorners(scene);
+    expect(detection.confidence).toBeGreaterThan(0.9);
+    expect(cornerError(detection.quad, corners)).toBeLessThanOrEqual(2);
+  });
+
+  it('keeps the grid apart from paper that darkens below the global threshold (photo-03: shading)', () => {
+    const scene = canvas(632, 632);
+    const corners = pasteBoard(scene, 'scene-shade', 4, 100, 100);
+    // Lighting falls off towards the bottom until the paper there is darker
+    // than the ink/paper midpoint, so a single threshold merges it with the frame.
+    for (let y = 0; y < scene.height; y++) {
+      const factor = 1 - 0.75 * (y / (scene.height - 1));
+      for (let x = 0; x < scene.width; x++) {
+        const offset = (y * scene.width + x) * 4;
+        for (let k = 0; k < 3; k++) scene.data[offset + k] = Math.round(scene.data[offset + k] * factor);
+      }
+    }
+    const detection = detectCorners(scene);
+    expect(detection.confidence).toBeGreaterThan(0.9);
+    expect(cornerError(detection.quad, corners)).toBeLessThanOrEqual(2);
+  });
+
+  it('does not take a bare rectangle with nothing inside it for a board', () => {
+    const scene = canvas(500, 500);
+    fillRect(scene, 100, 100, 300, 300, 0);
+    fillRect(scene, 104, 104, 292, 292, PAPER);
+    expect(detectCorners(scene).confidence).toBe(0);
+  });
+});

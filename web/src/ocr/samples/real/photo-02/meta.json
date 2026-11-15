@@ -1,0 +1,13 @@
+{
+  "solution": [
+    "5 3 2 8 4 7 1 6",
+    "1 4 6 2 3 5 8 7",
+    "2 6 1 4 5 8 7 3",
+    "8 2 4 6 7 3 5 1",
+    "7 8 3 5 6 1 4 2",
+    "4 7 8 3 1 6 2 5",
+    "3 5 7 1 8 2 6 4",
+    "6 1 5 7 2 4 3 8"
+  ],
+  "notes": "Sean's phone photo of an 8x8 from a puzzle book, held in hand indoors with the room in frame; heavy pencil working in the margins and marks inside cells; the page is curved so the grid edges bow, and a second puzzle is partly visible below. On production kenken.gg (2026-11-14) the scan failed outright. The board was drawn by hand in the editor, the corners clicked in Label a photo, and the solution is the solver's as the app showed it."
+}
