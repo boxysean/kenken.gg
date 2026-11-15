@@ -1,0 +1,3 @@
+{
+  "notes": "Sean's phone photo of the Daily Times KenKen Difficult No 6472 (6x6), blue pen answers in six cells and pencil candidates. Exported before the cage-letter fix (#122), so the cage names were normalised on ingest. Its corners match detectCorners to 0.2px: they appear to be the scan's own corners carried into the export rather than clicked by hand, so this fixture's corner stage is not an independent check."
+}

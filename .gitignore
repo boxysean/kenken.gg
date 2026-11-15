@@ -5,3 +5,4 @@ training/checkpoints/
 training/.venv/
 __pycache__/
 *.pt
+web/src/ocr/samples/real/last-report.json

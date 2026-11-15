@@ -1,3 +1,25 @@
+# Real-photograph fixtures — Sean's own photos, labelled
+
+`photo-01/`, `photo-02/`, … are Sean's own phone photos of printed puzzles, committed with his
+permission, each with the label he made for it in the app. `real.test.ts` scores every stage of
+the pipeline on them and holds the scores to `baseline.json`: a change may improve a stage but
+never make one worse.
+
+To add a photo: make `photo-NN/` with the phone's file as `photo.<jpg|webp|png>` and the
+`kenken-label.json` from *Label a photo* (with the four corners clicked) as `label.json`, then
+
+    npm run real:ingest                              # decodes photo.png, checks the label
+    UPDATE_REAL_BASELINE=1 npx vitest run src/ocr/samples/real/real.test.ts
+
+and commit the directory and `baseline.json`. `npm run real:overlay` draws the labelled corners,
+the lattice they imply and the detector's quad over each photo, into `/tmp/kenken-real/`.
+
+| fixture | what it is |
+|---|---|
+| `photo-01` | Daily Times *Difficult No 6472* (6x6), newsprint, blue pen answers; the same puzzle as photo 3 below |
+| `photo-02` | 8x8 from a puzzle book, handheld indoors, room in frame, heavy pencil, curved page |
+| `photo-03` | 8x8 printout, flat and square-on, instruction text above, graph paper behind |
+
 # Real-photograph scan run — five public photos, end to end
 
 The ten OCR tickets were proved against synthetic renders and a Playwright sample suite.

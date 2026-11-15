@@ -1,0 +1,32 @@
+{
+  "photo-01": {
+    "cornerConfidence": 0.992,
+    "cornerErrorPct": 0.038,
+    "cornerFound": 1,
+    "gridSize": 1,
+    "edgeAccuracy": 1,
+    "partition": 1,
+    "clueAccuracy": 0,
+    "scanSolved": 0
+  },
+  "photo-02": {
+    "cornerConfidence": 0.455,
+    "cornerErrorPct": 139.886,
+    "cornerFound": 0,
+    "gridSize": 1,
+    "edgeAccuracy": 0.33,
+    "partition": 0,
+    "clueAccuracy": 0,
+    "scanSolved": 0
+  },
+  "photo-03": {
+    "cornerConfidence": 0.465,
+    "cornerErrorPct": 50.668,
+    "cornerFound": 0,
+    "gridSize": 1,
+    "edgeAccuracy": 1,
+    "partition": 1,
+    "clueAccuracy": 0,
+    "scanSolved": 0
+  }
+}

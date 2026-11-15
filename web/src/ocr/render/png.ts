@@ -1,6 +1,6 @@
-// Minimal RGBA PNG encoder for exporting synthetic renders. Node-only (zlib):
+// Minimal RGBA PNG encoder (and decoder) for synthetic renders and committed fixtures. Node-only (zlib):
 // used by tests and scripts/export-synth.ts, never by application code.
-import { deflateSync } from 'node:zlib';
+import { deflateSync, inflateSync } from 'node:zlib';
 import type { OcrImage } from '../types';
 
 const SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -63,4 +63,58 @@ export function encodePng(image: OcrImage): Uint8Array {
     offset += part.length;
   }
   return png;
+}
+
+// The inverse, for reading committed fixtures back: an 8-bit RGBA (colour type
+// 6), non-interlaced PNG, which is what encodePng and a browser canvas both
+// write. Anything else is refused rather than misread.
+export function decodePng(bytes: Uint8Array): OcrImage {
+  for (let index = 0; index < SIGNATURE.length; index++) {
+    if (bytes[index] !== SIGNATURE[index]) throw new Error('decodePng: not a PNG');
+  }
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let width = 0;
+  let height = 0;
+  const idat: Uint8Array[] = [];
+  for (let offset = 8; offset < bytes.length; ) {
+    const length = view.getUint32(offset);
+    const type = String.fromCharCode(...bytes.subarray(offset + 4, offset + 8));
+    const body = bytes.subarray(offset + 8, offset + 8 + length);
+    if (type === 'IHDR') {
+      width = view.getUint32(offset + 8);
+      height = view.getUint32(offset + 12);
+      const [bitDepth, colourType, , , interlace] = body.subarray(8, 13);
+      if (bitDepth !== 8 || colourType !== 6 || interlace !== 0) {
+        throw new Error(`decodePng: only 8-bit RGBA non-interlaced PNGs are supported (bit depth ${bitDepth}, colour type ${colourType}, interlace ${interlace})`);
+      }
+    } else if (type === 'IDAT') {
+      idat.push(body);
+    }
+    offset += 12 + length;
+  }
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = width * 4;
+  const data = new Uint8ClampedArray(height * stride);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
+    for (let x = 0; x < stride; x++) {
+      const left = x >= 4 ? data[y * stride + x - 4] : 0;
+      const up = y > 0 ? data[(y - 1) * stride + x] : 0;
+      const upLeft = x >= 4 && y > 0 ? data[(y - 1) * stride + x - 4] : 0;
+      let predictor = 0;
+      if (filter === 1) predictor = left;
+      else if (filter === 2) predictor = up;
+      else if (filter === 3) predictor = Math.floor((left + up) / 2);
+      else if (filter === 4) {
+        const p = left + up - upLeft;
+        const pa = Math.abs(p - left);
+        const pb = Math.abs(p - up);
+        const pc = Math.abs(p - upLeft);
+        predictor = pa <= pb && pa <= pc ? left : pb <= pc ? up : upLeft;
+      }
+      data[y * stride + x] = (line[x] + predictor) & 0xff;
+    }
+  }
+  return { width, height, data };
 }

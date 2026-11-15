@@ -1,0 +1,102 @@
+{
+  "boardSize": 6,
+  "cageLetters": [
+    "r a a a b b",
+    "r r c c d d",
+    "s s e f g h",
+    "t z e y g h",
+    "t z y y x x",
+    "u u u v v w"
+  ],
+  "clues": {
+    "r": {
+      "target": 8,
+      "operator": "x"
+    },
+    "a": {
+      "target": 15,
+      "operator": "+"
+    },
+    "b": {
+      "target": 1,
+      "operator": "-"
+    },
+    "c": {
+      "target": 2,
+      "operator": "-"
+    },
+    "d": {
+      "target": 5,
+      "operator": "-"
+    },
+    "s": {
+      "target": 1,
+      "operator": "-"
+    },
+    "e": {
+      "target": 3,
+      "operator": "/"
+    },
+    "f": {
+      "target": 1,
+      "operator": ""
+    },
+    "g": {
+      "target": 3,
+      "operator": "-"
+    },
+    "h": {
+      "target": 2,
+      "operator": "-"
+    },
+    "t": {
+      "target": 3,
+      "operator": "-"
+    },
+    "z": {
+      "target": 6,
+      "operator": "x"
+    },
+    "y": {
+      "target": 60,
+      "operator": "x"
+    },
+    "x": {
+      "target": 3,
+      "operator": "/"
+    },
+    "u": {
+      "target": 10,
+      "operator": "+"
+    },
+    "v": {
+      "target": 2,
+      "operator": "/"
+    },
+    "w": {
+      "target": 5,
+      "operator": ""
+    }
+  },
+  "corners": {
+    "tl": {
+      "x": 156.82711068432428,
+      "y": 447.4778310297106
+    },
+    "tr": {
+      "x": 705.1920356569684,
+      "y": 431.3578411526139
+    },
+    "br": {
+      "x": 721.7157284083064,
+      "y": 986.9648180256663
+    },
+    "bl": {
+      "x": 170.79741391931498,
+      "y": 997.9775774274091
+    }
+  },
+  "source": {
+    "kind": "photo"
+  }
+}
