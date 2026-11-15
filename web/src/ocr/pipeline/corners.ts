@@ -2,12 +2,23 @@
 // photographed (or synthetic) page, in continuous image coordinates where pixel
 // (i, j) covers [i, i + 1) x [j, j + 1) -- the same convention as the labels.
 //
-// binarize -> 4-connected components of ink -> the largest one (the grid: every
-// line touches the frame) -> convex hull of its pixel squares -> a few extreme
-// hull points -> the max-area quadruple among them -> per-side refinement from
-// the frame's outer edge to its stroke centreline, which is what labels mark.
+// local (Sauvola) threshold -> 4-connected components of ink -> the few largest
+// -> for each: convex hull of its pixel squares -> a few extreme hull points ->
+// the max-area quadruple among them -> keep the component that is most like a
+// grid (a big, nearly quadrilateral blob with lines inside it: every grid line
+// touches the frame, so they are one component) -> per-side refinement from the
+// frame's outer edge to its stroke centreline, which is what labels mark.
+//
+// The threshold is local rather than global on purpose. Phone photos carry
+// shading and background that a single Otsu split gets wrong in two ways: a
+// shaded part of the page drops below the global threshold and bridges the grid
+// into one blob with the image border, and a dark room behind the page becomes
+// the largest ink component outright. A Sauvola threshold only marks a pixel as
+// ink when it is dark relative to its own neighbourhood *and* that neighbourhood
+// has contrast, so uniform dark regions (shadow, a dark table, the inside of a
+// thick stroke) stay paper and uniform noise on bright paper stays paper too.
 import type { OcrImage, Point, Quad } from '../types';
-import { binarize } from './binarize';
+import { grayscale } from './binarize';
 import { convexHull, quadArea, signedArea } from './geometry';
 
 export interface CornerDetection {
@@ -35,6 +46,31 @@ const EDGE_OUTLIER_PX = 1.5;
 const MIN_SIDE_SAMPLES = 5;
 // A blob smaller than this cannot be a readable board (a speck of dust or noise).
 const MIN_COMPONENT_PIXELS = 64;
+// Sauvola window half-size as a fraction of the shorter image side, with a
+// floor: the window must span a frame stroke (else the stroke's own middle
+// reads as uniform paper) and should stay well under a cell so that the local
+// mean is dominated by paper.
+const LOCAL_WINDOW_FRACTION = 1 / 64;
+const LOCAL_WINDOW_MIN_RADIUS = 8;
+// Sauvola's k: threshold = mean * (1 + k * (std / 128 - 1)). On flat paper
+// (std ~ 0) a pixel must be 35% darker than its surroundings to count as ink,
+// so paper noise and smooth shading never do; next to a printed stroke (std ~
+// 90) about 10% darker is enough, so soft, blurred stroke edges still do. The
+// literature uses 0.2-0.5: below ~0.3 the heaviest synthetic noise jitters the
+// frame's edge by half a pixel, at 0.5 ink in a shaded corner of the page
+// (photo-03's bottom) is close to being dropped, so this sits between.
+const SAUVOLA_K = 0.35;
+const SAUVOLA_DYNAMIC_RANGE = 128;
+// How many of the largest components are scored as grid candidates. The grid is
+// the largest in a clean scan; on a phone photo a page edge, a block of text or
+// the background's outline can outrank it by pixel count, but not by far.
+const MAX_CANDIDATES = 6;
+// The share of the inscribed quad's interior (inset to clear the frame stroke)
+// that the component itself covers. A grid has its lines in there, a few
+// percent of the area; a bare rectangle (a page edge, a picture frame, an empty
+// box) has none, and is not a board.
+const INTERIOR_INSET = 0.92;
+const MIN_INTERIOR_FILL = 0.01;
 
 interface Component {
   labels: Int32Array;
@@ -42,13 +78,50 @@ interface Component {
   size: number;
 }
 
+// Sauvola's local threshold over a square window, from integral images of the
+// grey level and its square. Pixels strictly darker than the local threshold are ink.
+function localInk(gray: Uint8Array, width: number, height: number): Uint8Array {
+  const radius = Math.max(LOCAL_WINDOW_MIN_RADIUS, Math.round(Math.min(width, height) * LOCAL_WINDOW_FRACTION));
+  const stride = width + 1;
+  const sum = new Float64Array(stride * (height + 1));
+  const sumSquares = new Float64Array(stride * (height + 1));
+  for (let y = 1; y <= height; y++) {
+    let rowSum = 0;
+    let rowSquares = 0;
+    for (let x = 1; x <= width; x++) {
+      const value = gray[(y - 1) * width + x - 1];
+      rowSum += value;
+      rowSquares += value * value;
+      sum[y * stride + x] = sum[(y - 1) * stride + x] + rowSum;
+      sumSquares[y * stride + x] = sumSquares[(y - 1) * stride + x] + rowSquares;
+    }
+  }
+  const ink = new Uint8Array(width * height);
+  for (let y = 0; y < height; y++) {
+    const y0 = Math.max(0, y - radius);
+    const y1 = Math.min(height, y + radius + 1);
+    for (let x = 0; x < width; x++) {
+      const x0 = Math.max(0, x - radius);
+      const x1 = Math.min(width, x + radius + 1);
+      const count = (x1 - x0) * (y1 - y0);
+      const total = sum[y1 * stride + x1] - sum[y0 * stride + x1] - sum[y1 * stride + x0] + sum[y0 * stride + x0];
+      const squares = sumSquares[y1 * stride + x1] - sumSquares[y0 * stride + x1] - sumSquares[y1 * stride + x0] + sumSquares[y0 * stride + x0];
+      const mean = total / count;
+      const variance = Math.max(0, squares / count - mean * mean);
+      const threshold = mean * (1 + SAUVOLA_K * (Math.sqrt(variance) / SAUVOLA_DYNAMIC_RANGE - 1));
+      ink[y * width + x] = gray[y * width + x] < threshold ? 1 : 0;
+    }
+  }
+  return ink;
+}
+
 // Labels 4-connected ink pixels with an explicit stack (no recursion) and
-// returns the label of the largest component, or label 0 when there is no ink.
-function largestComponent(ink: Uint8Array, width: number, height: number): Component {
+// returns the largest components by pixel count, biggest first.
+function largestComponents(ink: Uint8Array, width: number, height: number, limit: number): Component[] {
   const labels = new Int32Array(width * height);
   const stack = new Int32Array(width * height);
   let next = 0;
-  let best = { label: 0, size: 0 };
+  const sizes: number[] = [0];
   for (let start = 0; start < ink.length; start++) {
     if (ink[start] === 0 || labels[start] !== 0) continue;
     const label = ++next;
@@ -71,9 +144,11 @@ function largestComponent(ink: Uint8Array, width: number, height: number): Compo
       if (index >= width) visit(index - width);
       if (index < ink.length - width) visit(index + width);
     }
-    if (size > best.size) best = { label, size };
+    sizes.push(size);
   }
-  return { labels, ...best };
+  const order = sizes.map((size, label) => ({ label, size })).filter((c) => c.label > 0 && c.size >= MIN_COMPONENT_PIXELS);
+  order.sort((a, b) => b.size - a.size);
+  return order.slice(0, limit).map((c) => ({ labels, ...c }));
 }
 
 // The hull of a set of pixel squares only depends on each row's leftmost and
@@ -94,6 +169,41 @@ function componentOutline(component: Component, width: number, height: number): 
     points.push({ x: left, y }, { x: left, y: y + 1 }, { x: right + 1, y }, { x: right + 1, y: y + 1 });
   }
   return points;
+}
+
+// The share of the quad's interior, inset towards its centroid to clear the
+// frame stroke, covered by the component's own pixels: its internal lines.
+function interiorFill(component: Component, width: number, quad: Quad): number {
+  const corners = [quad.tl, quad.tr, quad.br, quad.bl];
+  const centre = { x: 0, y: 0 };
+  for (const p of corners) {
+    centre.x += p.x / 4;
+    centre.y += p.y / 4;
+  }
+  const inset = corners.map((p) => ({ x: centre.x + (p.x - centre.x) * INTERIOR_INSET, y: centre.y + (p.y - centre.y) * INTERIOR_INSET }));
+  const area = Math.abs(signedArea(inset));
+  if (area === 0) return 0;
+  const minX = Math.max(0, Math.floor(Math.min(...inset.map((p) => p.x))));
+  const maxX = Math.ceil(Math.max(...inset.map((p) => p.x)));
+  const minY = Math.max(0, Math.floor(Math.min(...inset.map((p) => p.y))));
+  const maxY = Math.ceil(Math.max(...inset.map((p) => p.y)));
+  const height = component.labels.length / width;
+  // Inside a convex polygon in screen-clockwise order: on the right of (or on) every edge.
+  const inside = (x: number, y: number): boolean => {
+    for (let k = 0; k < 4; k++) {
+      const a = inset[k];
+      const b = inset[(k + 1) % 4];
+      if ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x) < 0) return false;
+    }
+    return true;
+  };
+  let count = 0;
+  for (let y = minY; y < Math.min(height, maxY); y++) {
+    for (let x = minX; x < Math.min(width, maxX); x++) {
+      if (component.labels[y * width + x] === component.label && inside(x + 0.5, y + 0.5)) count++;
+    }
+  }
+  return count / area;
 }
 
 function candidateIndices(hull: Point[]): number[] {
@@ -268,21 +378,43 @@ function fallback(image: OcrImage): CornerDetection {
   };
 }
 
+interface Candidate {
+  component: Component;
+  outer: Quad;
+  confidence: number;
+  score: number;
+}
+
+// Hull, inscribed quad and grid-likeness of one component; null when it has no
+// usable hull or no lines inside its quad.
+function evaluate(component: Component, width: number, height: number): Candidate | null {
+  const hull = convexHull(componentOutline(component, width, height));
+  const hullArea = hull.length >= 3 ? Math.abs(signedArea(hull)) : 0;
+  if (hull.length < 4 || hullArea === 0) return null;
+  const picked = maxAreaQuad(hull, candidateIndices(hull));
+  if (picked === null) return null;
+  const outer = orderCorners(picked);
+  const area = quadArea(outer);
+  // The inscribed quad covers nearly all of the hull exactly when the blob is a quadrilateral.
+  const confidence = Math.min(1, Math.max(0, area / hullArea));
+  if (interiorFill(component, width, outer) < MIN_INTERIOR_FILL) return null;
+  // The biggest quadrilateral wins: a quad's area, discounted by how far the
+  // blob departs from being one. A grid outranks a larger but ragged blob and a
+  // more rectangular but much smaller one.
+  return { component, outer, confidence, score: area * confidence };
+}
+
 export function detectCorners(image: OcrImage): CornerDetection {
   const { width, height } = image;
   if (width === 0 || height === 0) return fallback(image);
-  const { ink } = binarize(image);
-  const component = largestComponent(ink, width, height);
-  if (component.size < MIN_COMPONENT_PIXELS) return fallback(image);
-
-  const hull = convexHull(componentOutline(component, width, height));
-  const hullArea = hull.length >= 3 ? Math.abs(signedArea(hull)) : 0;
-  if (hull.length < 4 || hullArea === 0) return fallback(image);
-  const picked = maxAreaQuad(hull, candidateIndices(hull));
-  if (picked === null) return fallback(image);
-  const outer = orderCorners(picked);
-  // The inscribed quad covers nearly all of the hull exactly when the blob is a quadrilateral.
-  const confidence = Math.min(1, Math.max(0, quadArea(outer) / hullArea));
+  const ink = localInk(grayscale(image), width, height);
+  let best: Candidate | null = null;
+  for (const component of largestComponents(ink, width, height, MAX_CANDIDATES)) {
+    const candidate = evaluate(component, width, height);
+    if (candidate !== null && (best === null || candidate.score > best.score)) best = candidate;
+  }
+  if (best === null) return fallback(image);
+  const { component, outer, confidence } = best;
 
   const isInk = (p: Point): boolean => {
     const x = Math.floor(p.x);

@@ -1,7 +1,7 @@
 {
   "photo-01": {
-    "cornerConfidence": 0.992,
-    "cornerErrorPct": 0.038,
+    "cornerConfidence": 0.994,
+    "cornerErrorPct": 0.255,
     "cornerFound": 1,
     "gridSize": 1,
     "edgeAccuracy": 1,
@@ -10,9 +10,9 @@
     "scanSolved": 0
   },
   "photo-02": {
-    "cornerConfidence": 0.455,
-    "cornerErrorPct": 139.886,
-    "cornerFound": 0,
+    "cornerConfidence": 0.962,
+    "cornerErrorPct": 1.697,
+    "cornerFound": 1,
     "gridSize": 1,
     "edgeAccuracy": 0.33,
     "partition": 0,
@@ -20,9 +20,9 @@
     "scanSolved": 0
   },
   "photo-03": {
-    "cornerConfidence": 0.465,
-    "cornerErrorPct": 50.668,
-    "cornerFound": 0,
+    "cornerConfidence": 0.993,
+    "cornerErrorPct": 0.736,
+    "cornerFound": 1,
     "gridSize": 1,
     "edgeAccuracy": 1,
     "partition": 1,
