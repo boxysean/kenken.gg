@@ -36,6 +36,14 @@
         .Flow figure { max-width: 220px; }
         .Flow .Arrow { transform: rotate(90deg); }
       }
+      .Tech { display: block; margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--hairline); font-size: 0.8rem; line-height: 1.45; }
+      .TechTag { font-weight: 800; color: var(--accent); }
+      .Explainer .TechPara { font-size: 0.9rem; line-height: 1.55; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--bg-bottom); }
+      .Explainer .Wide svg { max-width: 100%; }
+      .Wide .d-small { font-size: 13px; }
+      .Explainer .Wide { margin: 8px 0 16px; }
+      .d-layer { fill: var(--accent-soft); stroke: var(--ink); stroke-width: 1.2; }
+      .d-flow { fill: none; stroke: var(--accent); stroke-width: 2; }
       .d-page { fill: var(--surface); stroke: var(--hairline); stroke-width: 1.5; }
       .d-paper { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
       .d-thin { fill: none; stroke: var(--grid-line); stroke-width: 0.8; }
@@ -100,7 +108,8 @@
 <text class="d-clue" x="62" y="46.5">2−</text>
 <text class="d-clue" x="2" y="66.5">6×</text>
 <text class="d-clue" x="42" y="66.5">4</text></g>
-</svg><figcaption><b>Start: your photo.</b> It's a bit crooked, there's a table and some pencil marks, and the light isn't perfect. That's normal.</figcaption></figure></li>
+</svg><figcaption><b>Start: your photo.</b> It's a bit crooked, there's a table and some pencil marks, and the light isn't perfect. That's normal.
+<span class="Tech"><span class="TechTag">Under the hood:</span> the photo is decoded in the browser, turned upright using its <b>EXIF orientation</b>, and scaled down. Nothing is uploaded.</span></figcaption></figure></li>
             <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="The four corners of the grid marked with dots">
 <rect class="d-page" x="6" y="8" width="108" height="106" transform="rotate(-6 60 60)"/>
 <g transform="matrix(0.93 -0.16 0.2 0.95 14 30)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
@@ -139,7 +148,8 @@
 <circle class="d-dot" cx="88.4" cy="17.2" r="4"/>
 <circle class="d-dot" cx="104.4" cy="93.2" r="4"/>
 <circle class="d-dot" cx="30.0" cy="106.0" r="4"/>
-</svg><figcaption><b>1. Find the four corners.</b> Look for the biggest square-ish shape with lines inside it. That's the grid, not the table or the edge of the page.</figcaption></figure></li>
+</svg><figcaption><b>1. Find the four corners.</b> Look for the biggest square-ish shape with lines inside it. That's the grid, not the table or the edge of the page.
+<span class="Tech"><span class="TechTag">Under the hood:</span> <b>adaptive (Sauvola) thresholding</b> separates ink from paper despite shadows; <b>connected-component labelling</b> finds the shapes; each one's <b>convex hull</b> is fitted with the largest four-sided shape inside it, and the most grid-like one wins.</span></figcaption></figure></li>
             <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="The grid flattened into a perfect square">
 <g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
 <line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
@@ -173,7 +183,8 @@
 <text class="d-clue" x="62" y="46.5">2−</text>
 <text class="d-clue" x="2" y="66.5">6×</text>
 <text class="d-clue" x="42" y="66.5">4</text></g>
-</svg><figcaption><b>2. Flatten it.</b> Stretch the crooked grid into a perfect square, like smoothing out a crumpled drawing.</figcaption></figure></li>
+</svg><figcaption><b>2. Flatten it.</b> Stretch the crooked grid into a perfect square, like smoothing out a crumpled drawing.
+<span class="Tech"><span class="TechTag">Under the hood:</span> a <b>homography</b> (perspective transform) solved from the four corners maps the grid onto a 1024×1024 square, with <b>bilinear interpolation</b> filling each pixel.</span></figcaption></figure></li>
             <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="Only the thick cage walls, no clues">
 <g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
 <line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
@@ -199,7 +210,8 @@
 <line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
 <line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
 <rect class="d-frame" x="0" y="0" width="80" height="80"/></g>
-</svg><figcaption><b>3. Find the cages.</b> Thick walls separate the cages; thin lines don't. Measure every wall to see which is which.</figcaption></figure></li>
+</svg><figcaption><b>3. Find the cages.</b> Thick walls separate the cages; thin lines don't. Measure every wall to see which is which.
+<span class="Tech"><span class="TechTag">Under the hood:</span> <b>projection profiles</b> (how much ink each row and column holds) locate the grid lines; each wall's <b>stroke width</b> is measured and split into thick and thin by <b>1-D k-means</b> (k = 2); <b>union-find</b> merges cells joined by thin walls into cages.</span></figcaption></figure></li>
             <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="One clue cut out and zoomed in: eight times">
 <g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
 <line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
@@ -233,7 +245,8 @@
 <text class="d-clue" x="62" y="46.5">2−</text>
 <text class="d-clue" x="2" y="66.5">6×</text>
 <text class="d-clue" x="42" y="66.5">4</text></g><rect class="d-crop" x="20" y="20" width="14" height="10"/><line class="d-arrow" x1="34" y1="28" x2="62" y2="52"/><rect class="d-paper d-zoom" x="58" y="50" width="52" height="34"/><text class="d-big" x="64" y="74">8×</text>
-</svg><figcaption><b>4. Read the clues.</b> Cut out the little number in each cage's corner and work out what it says, like <i>8×</i>.</figcaption></figure></li>
+</svg><figcaption><b>4. Read the clues.</b> Cut out the little number in each cage's corner and work out what it says, like <i>8×</i>.
+<span class="Tech"><span class="TechTag">Under the hood:</span> <b>Otsu thresholding</b> and connected components split the clue into characters; each is scaled to 16×16 pixels and classified by a <b>convolutional neural network (CNN)</b>.</span></figcaption></figure></li>
             <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="The finished puzzle with every number filled in">
 <g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
 <line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
@@ -283,7 +296,8 @@
 <text class="d-num" x="30" y="75">3</text>
 <text class="d-num" x="50" y="75">4</text>
 <text class="d-num" x="70" y="75">1</text></g>
-</svg><figcaption><b>5. Solve!</b> Now it's an ordinary puzzle, and the solver fills in every number.</figcaption></figure></li>
+</svg><figcaption><b>5. Solve!</b> Now it's an ordinary puzzle, and the solver fills in every number.
+<span class="Tech"><span class="TechTag">Under the hood:</span> <b>constraint propagation</b> rules out impossible numbers for each cage, then <b>depth-first search with backtracking</b> tries the rest, in a <b>Web Worker</b> so the page stays responsive.</span></figcaption></figure></li>
           </ol>
           <p>If any step goes wrong, everything after it goes wrong too: if the corners are off, the cages and clues will be too. That's why each step gets checked on its own (see the report card below).</p>
 
@@ -348,7 +362,30 @@
 <path class="d-cross" d="M39 76l12 12M51 76l-12 12"/><line class="d-thin" x1="58" y1="82" x2="82" y2="82"/>
 </svg><figcaption><b>Test.</b> Then it gets quizzed on real photos it has to read cold.</figcaption></figure>
           </div>
+          <p class="TechPara"><span class="TechTag">Under the hood:</span> the reader is a small <b>convolutional neural network (CNN)</b>, about 90,000 <b>parameters</b>. It's a <b>classifier</b> with 14 <b>classes</b>: the digits 0–9 and + − × ÷. The flash cards are <b>labelled training data</b> and studying is <b>supervised learning</b>: the network is trained in <b>PyTorch</b> with the <b>Adam</b> optimiser on a <b>cross-entropy loss</b>. The practice cards are <b>synthetic data</b>, made more varied by <b>data augmentation</b> (random rotation, noise and brightness). The finished network is exported to <b>ONNX</b> and runs in your browser with <b>onnxruntime-web</b> (WebAssembly). If the model can't load, the app falls back to simpler <b>template matching</b>.</p>
+          <figure class="Wide">
+            <svg viewBox="0 0 600 150" role="img" aria-label="The CNN: a 16 by 16 input, three convolution layers with pooling, a dense layer, and 14 outputs">
+              <rect class="d-paper" x="10" y="45" width="60" height="60"/>
+              <text class="d-big" x="22" y="83">7</text>
+              <text class="d-small" x="40" y="125">16×16 input</text>
+              <rect class="d-layer" x="110" y="35" width="14" height="80"/><rect class="d-layer" x="116" y="41" width="14" height="80"/>
+              <text class="d-small" x="122" y="140">conv 16</text>
+              <rect class="d-layer" x="190" y="50" width="18" height="50"/><rect class="d-layer" x="196" y="56" width="18" height="50"/>
+              <text class="d-small" x="204" y="125">conv 32</text>
+              <rect class="d-layer" x="270" y="60" width="22" height="30"/><rect class="d-layer" x="276" y="66" width="22" height="30"/>
+              <text class="d-small" x="287" y="115">conv 64</text>
+              <rect class="d-layer" x="360" y="30" width="10" height="90"/>
+              <text class="d-small" x="365" y="140">dense 64</text>
+              <rect class="d-layer" x="440" y="40" width="10" height="70"/>
+              <text class="d-small" x="445" y="128">14 scores</text>
+              <text class="d-big" x="510" y="83">7</text>
+              <text class="d-small" x="530" y="105">98% sure</text>
+              <path class="d-flow" d="M76 75h28M140 75h44M218 75h46M302 75h52M374 75h60M454 75h48"/>
+            </svg>
+            <figcaption><b>The reader's layers.</b> Each <b>convolution</b> layer slides small filters over the image, finding strokes, then curves, then whole shapes; <b>max-pooling</b> halves the size between them. A <b>dense</b> layer combines what was found, and <b>softmax</b> turns the 14 scores into probabilities. The highest one is the answer, and a low one makes the app ask you instead.</figcaption>
+          </figure>
           <p>The reader only knows what its flash cards showed it. One trained only on neat practice cards gets confused by a real newspaper's font, much as you might be the first time you saw cursive. Real cards fix that, and those come from labelled photos.</p>
+          <p class="TechPara"><span class="TechTag">Under the hood:</span> this is called <b>domain shift</b>, or the <b>sim-to-real gap</b>. The reader scores 98.6% <b>validation accuracy</b> on synthetic crops, but it has never seen a real font, so it <b>doesn't generalise</b> to them. The fixes are more varied synthetic data (more fonts) and <b>fine-tuning</b> on real examples.</p>
 
           <h3>Labelling a photo: making the answer key</h3>
           <p>A labelled photo is a photo plus an <b>answer key</b>: what a person says is really in it. Anyone can make one in the <b>Label</b> tab:</p>
@@ -435,9 +472,11 @@
 </svg><figcaption><b>3.</b> Export. The file is the answer key for that photo.</figcaption></figure>
           </div>
           <p>One answer key is useful twice. It's a <b>test</b>: run the photo through the five steps and compare each one with the key. And it's a source of <b>real flash cards</b>: every clue in the photo becomes a card with its answer already known.</p>
+          <p class="TechPara"><span class="TechTag">Under the hood:</span> the answer key is the <b>ground truth</b>. In machine-learning terms, labelling is <b>data annotation</b>, and the exported JSON holds the four corner coordinates, the cage map and every clue. Before an answer key is trusted, a solver checks that its puzzle has <b>exactly one solution</b>. A labelling mistake almost always breaks that.</p>
 
           <h3>The report card that only goes up</h3>
           <p>Every labelled photo is kept, and every change to the scanner is graded against all of them, one step at a time. The rule is simple: <b>a grade can go up, but it can never go down.</b> A change that improves one photo but breaks another isn't allowed in.</p>
+          <p class="TechPara"><span class="TechTag">Under the hood:</span> this is a <b>regression test</b> run in <b>continuous integration (CI)</b> on every change, with a <b>ratchet</b>: the scores are saved as a <b>baseline</b> that only moves up. Each step is graded on its own by feeding it the ground truth from the steps before it, so a failure upstream can't hide a failure downstream (an <b>oracle</b>, or <b>ablation</b>, evaluation).</p>
           <div class="ReportCard" role="table" aria-label="Report card for three real photos, November 2026">
             <div role="row" class="Head"><span role="columnheader">Step</span><span role="columnheader">Photo 1</span><span role="columnheader">Photo 2</span><span role="columnheader">Photo 3</span></div>
             <div role="row"><span role="rowheader">1. Corners</span><span role="cell">✓</span><span role="cell">✓</span><span role="cell">✓</span></div>
