@@ -11,6 +11,47 @@
       content="The laziest KenKen solver online!"
     />
     <title>kenken.gg</title>
+    <style>
+      /* The scanning explainer: diagrams draw in the theme's own colours, so
+         they follow light and dark mode with the rest of the page. */
+      .Explainer { margin-top: 32px; padding-top: 8px; border-top: var(--border-width) solid var(--cage-border); }
+      .Explainer h2 { font-size: 1.4rem; line-height: 1.25; margin: 16px 0 12px; }
+      .Explainer h3 { font-size: 1.1rem; margin: 28px 0 8px; }
+      .Explainer figure { margin: 0; }
+      .Explainer figcaption { font-size: 0.9rem; line-height: 1.5; color: var(--ink-soft); }
+      .Explainer figcaption b { color: var(--ink); }
+      .Explainer svg { display: block; width: 100%; max-width: 140px; height: auto; margin: 0 auto 6px; }
+      .Steps { list-style: none; padding: 0; margin: 0 0 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 16px; }
+      .Steps li { padding: 12px; border: var(--border-width) solid var(--hairline); border-radius: var(--radius-card); background: var(--bg-bottom); }
+      .Flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 12px 0 16px; }
+      .Flow figure { flex: 1 1 130px; max-width: 170px; text-align: center; }
+      .Flow .Arrow, .Flow .Plus { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+      .ReportCard { display: grid; border: var(--border-width) solid var(--cage-border); font-size: 0.9rem; margin: 12px 0 8px; }
+      .ReportCard > div { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; }
+      .ReportCard span { padding: 6px 8px; border-top: var(--border-width) solid var(--hairline); }
+      .ReportCard .Head span { border-top: 0; font-weight: 800; background: var(--accent-soft); color: var(--ink); }
+      .Explainer .Caption { font-size: 0.85rem; color: var(--ink-soft); }
+      @media (max-width: 480px) {
+        .Flow { flex-direction: column; }
+        .Flow figure { max-width: 220px; }
+        .Flow .Arrow { transform: rotate(90deg); }
+      }
+      .d-page { fill: var(--surface); stroke: var(--hairline); stroke-width: 1.5; }
+      .d-paper { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+      .d-thin { fill: none; stroke: var(--grid-line); stroke-width: 0.8; }
+      .d-thick { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: square; }
+      .d-frame { fill: none; stroke: var(--ink); stroke-width: 2.4; }
+      .d-clue { font: 700 5.5px var(--font-sans); fill: var(--ink); }
+      .d-num { font: 700 11px var(--font-sans); fill: var(--accent); text-anchor: middle; }
+      .d-big { font: 800 20px var(--font-sans); fill: var(--ink); }
+      .d-small { font: 700 10px var(--font-sans); fill: var(--ink-soft); text-anchor: middle; }
+      .d-dot { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; }
+      .d-crop { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+      .d-arrow { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 3 2; }
+      .d-zoom { stroke: var(--accent); }
+      .d-tick { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .d-cross { fill: none; stroke: var(--ink-soft); stroke-width: 3; stroke-linecap: round; }
+    </style>
   </head>
   <body>
     <div class="Container">
@@ -19,6 +60,393 @@
         <p><a href="https://kenken.gg">kenken.gg</a> was built by <a href="https://boxysean.com">boxysean</a> for everyone out there who wants to continue to sit on the couch, pick up their phone, and figure out the answer to the KenKen they just failed to solve.</p>
 
         <p>Check out the code on <a href="https://github.com/boxysean/kenken.gg">GitHub</a>!</p>
+
+        <section class="Explainer" aria-labelledby="how-scanning-works">
+          <h2 id="how-scanning-works">How photo scanning works, explained like you're five</h2>
+          <p>You take a photo of a KenKen. The computer has to turn that photo into a puzzle it can solve. It can't look at the whole thing at once the way you do, so it works in small steps, one after another, like following a recipe.</p>
+
+          <ol class="Steps">
+            <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="A phone photo of a KenKen, a bit tilted">
+<rect class="d-page" x="6" y="8" width="108" height="106" transform="rotate(-6 60 60)"/>
+<g transform="matrix(0.93 -0.16 0.2 0.95 14 30)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text></g>
+</svg><figcaption><b>Start: your photo.</b> It's a bit crooked, there's a table and some pencil marks, and the light isn't perfect. That's normal.</figcaption></figure></li>
+            <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="The four corners of the grid marked with dots">
+<rect class="d-page" x="6" y="8" width="108" height="106" transform="rotate(-6 60 60)"/>
+<g transform="matrix(0.93 -0.16 0.2 0.95 14 30)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text></g>
+<circle class="d-dot" cx="14.0" cy="30.0" r="4"/>
+<circle class="d-dot" cx="88.4" cy="17.2" r="4"/>
+<circle class="d-dot" cx="104.4" cy="93.2" r="4"/>
+<circle class="d-dot" cx="30.0" cy="106.0" r="4"/>
+</svg><figcaption><b>1. Find the four corners.</b> Look for the biggest square-ish shape with lines inside it. That's the grid, not the table or the edge of the page.</figcaption></figure></li>
+            <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="The grid flattened into a perfect square">
+<g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text></g>
+</svg><figcaption><b>2. Flatten it.</b> Stretch the crooked grid into a perfect square, like smoothing out a crumpled drawing.</figcaption></figure></li>
+            <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="Only the thick cage walls, no clues">
+<g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/></g>
+</svg><figcaption><b>3. Find the cages.</b> Thick walls separate the cages; thin lines don't. Measure every wall to see which is which.</figcaption></figure></li>
+            <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="One clue cut out and zoomed in: eight times">
+<g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text></g><rect class="d-crop" x="20" y="20" width="14" height="10"/><line class="d-arrow" x1="34" y1="28" x2="62" y2="52"/><rect class="d-paper d-zoom" x="58" y="50" width="52" height="34"/><text class="d-big" x="64" y="74">8×</text>
+</svg><figcaption><b>4. Read the clues.</b> Cut out the little number in each cage's corner and work out what it says, like <i>8×</i>.</figcaption></figure></li>
+            <li><figure><svg viewBox="0 0 120 120" role="img" aria-label="The finished puzzle with every number filled in">
+<g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text>
+<text class="d-num" x="10" y="15">1</text>
+<text class="d-num" x="30" y="15">2</text>
+<text class="d-num" x="50" y="15">3</text>
+<text class="d-num" x="70" y="15">4</text>
+<text class="d-num" x="10" y="35">3</text>
+<text class="d-num" x="30" y="35">4</text>
+<text class="d-num" x="50" y="35">1</text>
+<text class="d-num" x="70" y="35">2</text>
+<text class="d-num" x="10" y="55">4</text>
+<text class="d-num" x="30" y="55">1</text>
+<text class="d-num" x="50" y="55">2</text>
+<text class="d-num" x="70" y="55">3</text>
+<text class="d-num" x="10" y="75">2</text>
+<text class="d-num" x="30" y="75">3</text>
+<text class="d-num" x="50" y="75">4</text>
+<text class="d-num" x="70" y="75">1</text></g>
+</svg><figcaption><b>5. Solve!</b> Now it's an ordinary puzzle, and the solver fills in every number.</figcaption></figure></li>
+          </ol>
+          <p>If any step goes wrong, everything after it goes wrong too: if the corners are off, the cages and clues will be too. That's why each step gets checked on its own (see the report card below).</p>
+
+          <h3>Step 4 is the hard one: teaching the computer to read</h3>
+          <p>Steps 1–3 follow fixed rules. Reading a clue is different: there are many fonts, and newspapers, books and printouts all write <i>2−</i> or <i>12÷</i> a little differently. So instead of writing rules, we <b>teach</b> a small program, the <b>reader</b>, the way a child learns letters: with flash cards. Each card shows a picture of a character, with the right answer on the back.</p>
+
+          <div class="Flow">
+            <figure><svg viewBox="0 0 120 120" role="img" aria-label="A stack of neat practice flash cards">
+<rect class="d-paper" x="30" y="22" width="60" height="44" transform="rotate(-8 60 44)"/>
+<rect class="d-paper" x="30" y="30" width="60" height="44" transform="rotate(5 60 52)"/>
+<rect class="d-paper" x="30" y="40" width="60" height="44"/>
+<text class="d-big" x="44" y="70">7−</text>
+<text class="d-small" x="60" y="104">× thousands</text>
+</svg><figcaption><b>Practice cards.</b> Made up by the computer, so we can make as many as we like. But they're neater than real life.</figcaption></figure>
+            <span class="Plus" aria-hidden="true">+</span>
+            <figure><svg viewBox="0 0 120 120" role="img" aria-label="Clues cut out of real photos">
+<g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text></g><rect class="d-crop" x="20" y="20" width="14" height="10"/><line class="d-arrow" x1="34" y1="28" x2="62" y2="52"/><rect class="d-paper d-zoom" x="58" y="50" width="52" height="34"/><text class="d-big" x="64" y="74">8×</text>
+</svg><figcaption><b>Real cards.</b> Clues cut out of real photos, with the answers a person wrote down. Fewer of them, but messy like real life.</figcaption></figure>
+            <span class="Arrow" aria-hidden="true">→</span>
+            <figure><svg viewBox="0 0 120 120" role="img" aria-label="The reader studying">
+<circle class="d-paper" cx="60" cy="56" r="36"/>
+<path class="d-thin" d="M60 22v68M40 36c10 8 10 18 0 26M80 36c-10 8-10 18 0 26M40 70c8 4 12 10 10 18M80 70c-8 4-12 10-10 18"/>
+<text class="d-small" x="60" y="110">the reader</text>
+</svg><figcaption><b>Study.</b> The reader guesses each card, checks the back, and adjusts a little every time it's wrong.</figcaption></figure>
+            <span class="Arrow" aria-hidden="true">→</span>
+            <figure><svg viewBox="0 0 120 120" role="img" aria-label="A report card">
+<rect class="d-paper" x="28" y="12" width="64" height="96"/>
+<text class="d-small" x="60" y="30">REPORT</text>
+<path class="d-tick" d="M38 44l5 5 9-10"/><line class="d-thin" x1="58" y1="45" x2="82" y2="45"/>
+<path class="d-tick" d="M38 62l5 5 9-10"/><line class="d-thin" x1="58" y1="63" x2="82" y2="63"/>
+<path class="d-cross" d="M39 76l12 12M51 76l-12 12"/><line class="d-thin" x1="58" y1="82" x2="82" y2="82"/>
+</svg><figcaption><b>Test.</b> Then it gets quizzed on real photos it has to read cold.</figcaption></figure>
+          </div>
+          <p>The reader only knows what its flash cards showed it. One trained only on neat practice cards gets confused by a real newspaper's font, much as you might be the first time you saw cursive. Real cards fix that, and those come from labelled photos.</p>
+
+          <h3>Labelling a photo: making the answer key</h3>
+          <p>A labelled photo is a photo plus an <b>answer key</b>: what a person says is really in it. Anyone can make one in the <b>Label</b> tab:</p>
+          <div class="Flow">
+            <figure><svg viewBox="0 0 120 120" role="img" aria-label="The four corners of the grid marked with dots">
+<rect class="d-page" x="6" y="8" width="108" height="106" transform="rotate(-6 60 60)"/>
+<g transform="matrix(0.93 -0.16 0.2 0.95 14 30)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text></g>
+<circle class="d-dot" cx="14.0" cy="30.0" r="4"/>
+<circle class="d-dot" cx="88.4" cy="17.2" r="4"/>
+<circle class="d-dot" cx="104.4" cy="93.2" r="4"/>
+<circle class="d-dot" cx="30.0" cy="106.0" r="4"/>
+</svg><figcaption><b>1.</b> Pick a photo and click the grid's four outside corners.</figcaption></figure>
+            <span class="Arrow" aria-hidden="true">→</span>
+            <figure><svg viewBox="0 0 120 120" role="img" aria-label="The board drawn again in the editor, cages and clues">
+<g transform="translate(20 20)"><rect class="d-paper" x="0" y="0" width="80" height="80"/>
+<line class="d-thin" x1="20" y1="0" x2="20" y2="80"/>
+<line class="d-thin" x1="0" y1="20" x2="80" y2="20"/>
+<line class="d-thin" x1="40" y1="0" x2="40" y2="80"/>
+<line class="d-thin" x1="0" y1="40" x2="80" y2="40"/>
+<line class="d-thin" x1="60" y1="0" x2="60" y2="80"/>
+<line class="d-thin" x1="0" y1="60" x2="80" y2="60"/>
+<line class="d-thick" x1="40" y1="0" x2="40" y2="20"/>
+<line class="d-thick" x1="60" y1="0" x2="60" y2="20"/>
+<line class="d-thick" x1="20" y1="20" x2="20" y2="40"/>
+<line class="d-thick" x1="40" y1="20" x2="40" y2="40"/>
+<line class="d-thick" x1="60" y1="20" x2="60" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="40" y2="60"/>
+<line class="d-thick" x1="60" y1="40" x2="60" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="40" y2="80"/>
+<line class="d-thick" x1="60" y1="60" x2="60" y2="80"/>
+<line class="d-thick" x1="0" y1="20" x2="20" y2="20"/>
+<line class="d-thick" x1="20" y1="40" x2="40" y2="40"/>
+<line class="d-thick" x1="40" y1="40" x2="60" y2="40"/>
+<line class="d-thick" x1="60" y1="40" x2="80" y2="40"/>
+<line class="d-thick" x1="0" y1="60" x2="20" y2="60"/>
+<line class="d-thick" x1="20" y1="60" x2="40" y2="60"/>
+<line class="d-thick" x1="40" y1="60" x2="60" y2="60"/>
+<rect class="d-frame" x="0" y="0" width="80" height="80"/>
+<text class="d-clue" x="2" y="6.5">8×</text>
+<text class="d-clue" x="42" y="6.5">2−</text>
+<text class="d-clue" x="62" y="6.5">2÷</text>
+<text class="d-clue" x="2" y="26.5">7+</text>
+<text class="d-clue" x="42" y="46.5">3+</text>
+<text class="d-clue" x="62" y="46.5">2−</text>
+<text class="d-clue" x="2" y="66.5">6×</text>
+<text class="d-clue" x="42" y="66.5">4</text></g>
+</svg><figcaption><b>2.</b> Draw the cages and type in each clue, copying what's printed.</figcaption></figure>
+            <span class="Arrow" aria-hidden="true">→</span>
+            <figure><svg viewBox="0 0 120 120" role="img" aria-label="An answer-key file">
+<path class="d-paper" d="M34 14h38l18 18v74H34z"/><path class="d-thin" d="M72 14v18h18"/>
+<line class="d-thin" x1="44" y1="50" x2="80" y2="50"/><line class="d-thin" x1="44" y1="62" x2="80" y2="62"/><line class="d-thin" x1="44" y1="74" x2="70" y2="74"/>
+<path class="d-tick" d="M46 90l8 8 16-18"/>
+</svg><figcaption><b>3.</b> Export. The file is the answer key for that photo.</figcaption></figure>
+          </div>
+          <p>One answer key is useful twice. It's a <b>test</b>: run the photo through the five steps and compare each one with the key. And it's a source of <b>real flash cards</b>: every clue in the photo becomes a card with its answer already known.</p>
+
+          <h3>The report card that only goes up</h3>
+          <p>Every labelled photo is kept, and every change to the scanner is graded against all of them, one step at a time. The rule is simple: <b>a grade can go up, but it can never go down.</b> A change that improves one photo but breaks another isn't allowed in.</p>
+          <div class="ReportCard" role="table" aria-label="Report card for three real photos, November 2026">
+            <div role="row" class="Head"><span role="columnheader">Step</span><span role="columnheader">Photo 1</span><span role="columnheader">Photo 2</span><span role="columnheader">Photo 3</span></div>
+            <div role="row"><span role="rowheader">1. Corners</span><span role="cell">✓</span><span role="cell">✓</span><span role="cell">✓</span></div>
+            <div role="row"><span role="rowheader">3. Cages</span><span role="cell">✓</span><span role="cell">✗ pencil marks</span><span role="cell">✓</span></div>
+            <div role="row"><span role="rowheader">4. Clues</span><span role="cell">18%</span><span role="cell">4%</span><span role="cell">29%</span></div>
+            <div role="row"><span role="rowheader">5. Solved</span><span role="cell">✗</span><span role="cell">✗</span><span role="cell">✗</span></div>
+          </div>
+          <p class="Caption">The real report card in November 2026. The scanner finds the grid on all three photos and the cages on two, but the reader still misreads most clues, because its practice cards were all one tidy font. Next: practice cards in many fonts, plus more labelled photos for real cards.</p>
+        </section>
 
         <div class="notices">
           <h2>Privacy notice</h2>
